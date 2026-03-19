@@ -2,13 +2,6 @@
 
 <br/>
 
-```
- ___  _  _ _  _  __  __    __  __   __
-/ __)( )( ( \( )/  \(  )  /  \(  ) (  )
-\__ \ )()(  )  (( () ))(__( () ))(__/ (_/
-(___/(__\_(_)\__)\__/(____)\__/(____)\___/
-```
-
 # SunoLoad 🎵
 
 **Вставь ссылку на трек с Suno — скачай MP3 в один клик**
@@ -64,7 +57,7 @@ cdn1.suno.ai/453a796e-....mp3  ✅
 **Python хостинг** (Railway, Render, VPS)
 
 ```bash
-python backend.py
+python get_full_url.py
 ```
 
 **PHP хостинг** (Beget, Timeweb и др.)
@@ -106,7 +99,7 @@ cdn1.suno.ai/453a796e-....mp3  ✅
 **Python hosting** (Railway, Render, VPS)
 
 ```bash
-python backend.py
+python get_full_url.py
 ```
 
 **PHP hosting** (any shared hosting)
