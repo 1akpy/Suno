@@ -1,113 +1,808 @@
-<div align="center">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SunoLoad</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-<br/>
+  body {
+    background: #0a0602;
+    font-family: 'Syne', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
 
-# SunoLoad 🎵
+  /* orange ambient bg */
+  .glow-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 65% 55% at 15% 20%, rgba(251,146,60,0.15) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 50% at 85% 80%, rgba(234,88,12,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(251,146,60,0.05) 0%, transparent 70%);
+    animation: breathe 8s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
 
-**Вставь ссылку на трек с Suno — скачай MP3 в один клик**
-**Paste a Suno link — download MP3 in one click**
+  @keyframes breathe {
+    0%   { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
 
-<br/>
+  /* stars canvas */
+  canvas {
+    position: fixed; inset: 0; z-index: 1;
+    pointer-events: none;
+  }
 
-[![Suno](https://img.shields.io/badge/Suno-MP3%20Downloader-f97316?style=flat-square&logoColor=white)](https://sunoload.vercel.app)
-[![Vercel](https://img.shields.io/badge/Vercel-Ready-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+  /* main */
+  .center {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    padding: 2rem;
+    gap: 0;
+  }
+
+  /* wave */
+  .wave {
+    display: flex; align-items: center; gap: 3px;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.1s forwards;
+  }
+
+  .wave-bar {
+    width: 3px; border-radius: 2px;
+    background: linear-gradient(to top, #ea580c, #fb923c, #fed7aa);
+    animation: waveAnim var(--d) ease-in-out infinite alternate;
+    opacity: 0.7;
+  }
+
+  @keyframes waveAnim {
+    from { transform: scaleY(0.15); }
+    to   { transform: scaleY(1); }
+  }
+
+  /* title */
+  h1 {
+    font-size: clamp(3.5rem, 12vw, 6.5rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin-bottom: 0.6rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+
+  h1 .suno { color: #fff; }
+  h1 .load {
+    background: linear-gradient(90deg, #fb923c, #f97316, #ea580c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200%;
+    animation: gradShift 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes gradShift {
+    0%   { background-position: 0%; }
+    100% { background-position: 100%; }
+  }
+
+  .sub {
+    font-family: 'Syne Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+    max-width: 380px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.28s forwards;
+  }
+
+  /* ── STATUS TOAST ──────────────────────────────────────────────────────── */
+  .status {
+    font-family: 'Syne Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    margin-top: 0.75rem;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: none;
+  }
+
+  .status.show {
+    animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards,
+               toastOut 0.4s ease 2.6s forwards;
+  }
+
+  @keyframes toastIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastOut {
+    to { opacity: 0; transform: translateY(-4px); }
+  }
+
+  .success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .error   { background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.2);  color: #fca5a5; }
+
+  /* form */
+  .form {
+    width: min(460px, 90vw);
+    opacity: 0;
+    animation: fadeUp 0.6s 0.36s forwards;
+  }
+
+  .input-row {
+    display: flex;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(251,146,60,0.2);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(16px);
+  }
+
+  .input-row:focus-within {
+    border-color: rgba(251,146,60,0.55);
+    box-shadow: 0 0 0 4px rgba(251,146,60,0.07), 0 0 40px rgba(251,146,60,0.12);
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none; outline: none;
+    padding: 1.1rem 1.25rem;
+    font-family: 'Syne Mono', monospace;
+    font-size: 0.78rem;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+
+  input[type="text"]::placeholder { color: rgba(255,255,255,0.18); }
+
+  /* ── BUTTON ─────────────────────────────────────────────────────────────── */
+  .btn {
+    background: linear-gradient(135deg, #fb923c, #ea580c);
+    border: none;
+    padding: 0.85rem 1.5rem;
+    margin: 0.3rem;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 0.45rem;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    box-shadow: 0 4px 20px rgba(251,146,60,0.3);
+    position: relative; overflow: hidden;
+    transition: box-shadow 0.3s, transform 0.2s;
+    isolation: isolate;
+  }
+
+  /* liquid fill layer */
+  .btn::after {
+    content: '';
+    position: absolute;
+    bottom: -60%;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    width: 160%;
+    padding-bottom: 160%;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1),
+                bottom 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 0;
+  }
+
+  /* shine streak */
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -60%;
+    width: 40%;
+    height: 300%;
+    background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%);
+    transform: skewX(-20deg);
+    transition: left 0.0s;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .btn:hover:not(:disabled)::after {
+    bottom: -20%;
+    transform: translateX(-50%) scale(1);
+  }
+
+  .btn:hover:not(:disabled)::before {
+    left: 130%;
+    transition: left 0.55s ease;
+  }
+
+  .btn:hover:not(:disabled) {
+    box-shadow: 0 0 0 3px rgba(251,146,60,0.25),
+                0 12px 40px rgba(251,146,60,0.55),
+                0 0 80px rgba(251,146,60,0.15);
+    transform: translateY(-2px);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: scale(0.95) translateY(0);
+    box-shadow: 0 2px 10px rgba(251,146,60,0.3);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+
+  .btn:disabled { opacity: 0.35; cursor: default; }
+
+  /* all children sit above pseudo-elements */
+  .btn > * { position: relative; z-index: 2; }
+
+  /* ── ICON WRAP ────────────────────────────────────────────────────────── */
+  .btn-icon-wrap {
+    display: flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* the SVG arrow bobs on hover */
+  .btn:hover:not(:disabled) #btnIcon {
+    animation: arrowBounce 0.5s cubic-bezier(0.36,0.07,0.19,0.97) both;
+  }
+
+  @keyframes arrowBounce {
+    0%   { transform: translateY(0); }
+    20%  { transform: translateY(-5px); }
+    50%  { transform: translateY(3px); }
+    70%  { transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+  }
+
+  /* loading state — mini equalizer bars replace icon */
+  .eq-bars {
+    display: none;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+  }
+
+  .eq-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: #fff;
+    transform-origin: bottom;
+  }
+
+  .eq-bar:nth-child(1) { animation: eqPulse 0.55s 0.00s ease-in-out infinite alternate; }
+  .eq-bar:nth-child(2) { animation: eqPulse 0.55s 0.11s ease-in-out infinite alternate; }
+  .eq-bar:nth-child(3) { animation: eqPulse 0.55s 0.22s ease-in-out infinite alternate; }
+  .eq-bar:nth-child(4) { animation: eqPulse 0.55s 0.07s ease-in-out infinite alternate; }
+
+  @keyframes eqPulse {
+    from { height: 3px;  }
+    to   { height: 14px; }
+  }
+
+  .btn.loading .btn-icon-wrap #btnIcon { display: none; }
+  .btn.loading .eq-bars               { display: flex; }
+  .btn.loading .btn-label             { opacity: 0.6; letter-spacing: 0.08em; }
+
+  /* ── PARTICLE BURST ────────────────────────────────────────────────────── */
+  .particle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform, opacity;
+  }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    display: none;
+  }
 
 
-<br/>
 
-**[ [🇷🇺 Русский](#-русский) · [🇬🇧 English](#-english) ]**
+  .footer {
+    position: fixed; bottom: 1.5rem;
+    font-family: 'Syne Mono', monospace;
+    font-size: 0.62rem;
+    color: rgba(255,255,255,0.12);
+    letter-spacing: 0.08em;
+    z-index: 10;
+  }
 
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(18px); }
+    to   { opacity:1; transform: none; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="glow-bg"></div>
+<canvas id="stars"></canvas>
+
+<div class="center">
+  <div class="wave" id="wave"></div>
+
+  <h1><span class="suno">Suno</span><span class="load">Load</span></h1>
+  <p class="sub">Independent tool &mdash; not affiliated with Suno AI &mdash; no copyrighted content is stored or distributed</p>
+
+  <div class="form">
+    <div class="input-row">
+      <input type="text" id="url" placeholder="suno.com/song/... or /s/...">
+      <button class="btn" id="downloadBtn">
+        <span class="btn-icon-wrap">
+          <svg id="btnIcon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="eq-bars">
+            <span class="eq-bar"></span>
+            <span class="eq-bar"></span>
+            <span class="eq-bar"></span>
+            <span class="eq-bar"></span>
+          </span>
+        </span>
+        <span class="btn-label">Download</span>
+      </button>
+    </div>
+    <div id="statusMessage" class="status"></div>
+  </div>
 </div>
 
-<br/>
+<p class="footer">not affiliated with suno inc.</p>
 
----
+<script>
+  // ── waveform ────────────────────────────────────────────────────────────────
+  const waveEl = document.getElementById('wave');
+  for (let i = 0; i < 32; i++) {
+    const b = document.createElement('div');
+    b.className = 'wave-bar';
+    b.style.height = (6 + Math.random() * 36) + 'px';
+    b.style.setProperty('--d', (0.5 + Math.random() * 1) + 's');
+    b.style.animationDelay = (-Math.random() * 2) + 's';
+    waveEl.appendChild(b);
+  }
 
-## 🇷🇺 Русский
+  // ── stars ───────────────────────────────────────────────────────────────────
+  const canvas = document.getElementById('stars');
+  const ctx    = canvas.getContext('2d');
 
-Вставь ссылку на трек с Suno — скачай MP3 в один клик.
+  let W, H, stars = [];
 
-### Как это работает
+  const resize = () => {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  };
 
-```
-suno.com/s/r4t4FIFyoU7GTnX8
-        ↓  бэкенд следует редиректу
-suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
-        ↓  собирается прямая ссылка
-cdn1.suno.ai/453a796e-....mp3  ✅
-```
+  const initStars = () => {
+    stars = [];
+    for (let i = 0; i < 160; i++) {
+      stars.push({
+        x:    Math.random() * W,
+        y:    Math.random() * H,
+        r:    0.3 + Math.random() * 1.8,
+        op:   0.1 + Math.random() * 0.6,
+        speed: 0.2 + Math.random() * 0.5,
+        dir:  Math.random() * Math.PI * 2,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.01 + Math.random() * 0.02,
+        orange: Math.random() > 0.6
+      });
+    }
+  };
 
-### Поддерживаемые ссылки
+  const drawStars = () => {
+    ctx.clearRect(0, 0, W, H);
+    stars.forEach(s => {
+      s.pulse += s.pulseSpeed;
+      const opacity = s.op * (0.5 + 0.5 * Math.sin(s.pulse));
 
-| Тип | Пример |
-|-----|--------|
-| Короткая | `suno.com/s/r4t4FIFyoU7GTnX8` |
-| Полная | `suno.com/song/453a796e-...` |
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
 
-### Где хостить
+      if (s.orange) {
+        ctx.fillStyle = `rgba(251,146,60,${opacity})`;
+        const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4);
+        grd.addColorStop(0, `rgba(251,146,60,${opacity * 0.5})`);
+        grd.addColorStop(1, 'rgba(251,146,60,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,200,100,${opacity})`;
+      } else {
+        ctx.fillStyle = `rgba(255,255,255,${opacity})`;
+      }
 
-**Vercel** (бесплатно, рекомендуется)
+      ctx.fill();
 
-1. Залей репозиторий на GitHub
-2. Зайди на [vercel.com](https://vercel.com) → **Add New Project**
-3. Выбери репо, Framework: **Other**
-4. **Deploy** — готово
+      s.x += Math.cos(s.dir) * s.speed * 0.3;
+      s.y += Math.sin(s.dir) * s.speed * 0.3;
 
-**Python хостинг** (Railway, Render, VPS)
+      if (s.x < -10) s.x = W + 10;
+      if (s.x > W + 10) s.x = -10;
+      if (s.y < -10) s.y = H + 10;
+      if (s.y > H + 10) s.y = -10;
+    });
+    requestAnimationFrame(drawStars);
+  };
 
-```bash
-python get_full_url.py
-```
+  resize();
+  initStars();
+  drawStars();
+  window.addEventListener('resize', () => { resize(); initStars(); });
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // 🔊 AUDIO ENGINE — Web Audio API, zero external files
+  // ══════════════════════════════════════════════════════════════════════════
+  let audioCtx = null;
 
+  const getAudioCtx = () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  };
 
----
+  // Master gain (global volume)
+  let masterGain = null;
+  const getMaster = () => {
+    const ac = getAudioCtx();
+    if (!masterGain) {
+      masterGain = ac.createGain();
+      masterGain.gain.value = 0.55;
+      masterGain.connect(ac.destination);
+    }
+    return masterGain;
+  };
 
-## 🇬🇧 English
+  // Helpers
+  const osc = (freq, type, start, duration, vol, freqEnd = null, ac = null) => {
+    const ctx = ac || getAudioCtx();
+    const o   = ctx.createOscillator();
+    const g   = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, start);
+    if (freqEnd !== null) o.frequency.exponentialRampToValueAtTime(freqEnd, start + duration);
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.linearRampToValueAtTime(vol, start + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    o.connect(g);
+    g.connect(getMaster());
+    o.start(start);
+    o.stop(start + duration + 0.02);
+    return { o, g };
+  };
 
-Paste a Suno link — download MP3 in one click.
+  const noise = (duration, vol, start, filterFreq = 2000, filterQ = 1, ac = null) => {
+    const ctx    = ac || getAudioCtx();
+    const size   = ctx.sampleRate * duration;
+    const buf    = ctx.createBuffer(1, size, ctx.sampleRate);
+    const data   = buf.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+    const src    = ctx.createBufferSource();
+    src.buffer   = buf;
+    const filt   = ctx.createBiquadFilter();
+    filt.type    = 'bandpass';
+    filt.frequency.setValueAtTime(filterFreq, start);
+    filt.Q.value = filterQ;
+    const g      = ctx.createGain();
+    g.gain.setValueAtTime(vol, start);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    src.connect(filt);
+    filt.connect(g);
+    g.connect(getMaster());
+    src.start(start);
+    src.stop(start + duration + 0.01);
+  };
 
-### How it works
+  // ── 1. HOVER — soft crystal ping, very subtle ───────────────────────────
+  const sfxHover = () => {
+    const ac  = getAudioCtx();
+    const now = ac.currentTime;
+    osc(1320, 'sine', now, 0.18, 0.06);
+    osc(2640, 'sine', now, 0.10, 0.02);
+  };
 
-```
-suno.com/s/r4t4FIFyoU7GTnX8
-        ↓  backend follows the redirect
-suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
-        ↓  builds a direct link
-cdn1.suno.ai/453a796e-....mp3  ✅
-```
+  // ── 2. CLICK — warm organic "tap" ──────────────────────────────────────
+  const sfxClick = () => {
+    const ac  = getAudioCtx();
+    const now = ac.currentTime;
+    // low thud
+    osc(120, 'sine', now, 0.09, 0.22, 60);
+    // mid click
+    osc(520, 'triangle', now, 0.05, 0.14, 320);
+    // tiny noise burst
+    noise(0.04, 0.08, now, 1800, 3);
+  };
 
-### Supported links
+  // ── 3. WHOOSH — playful download-initiated swoop ───────────────────────
+  const sfxWhoosh = () => {
+    const ac  = getAudioCtx();
+    const now = ac.currentTime;
+    // rising tone
+    osc(180, 'sine', now, 0.35, 0.16, 740);
+    osc(360, 'sine', now, 0.35, 0.08, 1480);
+    // noise sweep
+    const size = Math.ceil(ac.sampleRate * 0.35);
+    const buf  = ac.createBuffer(1, size, ac.sampleRate);
+    const d    = buf.getChannelData(0);
+    for (let i = 0; i < size; i++) d[i] = Math.random() * 2 - 1;
+    const src  = ac.createBufferSource();
+    src.buffer = buf;
+    const filt = ac.createBiquadFilter();
+    filt.type  = 'highpass';
+    filt.frequency.setValueAtTime(200, now);
+    filt.frequency.exponentialRampToValueAtTime(3400, now + 0.35);
+    const g    = ac.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(0.07, now + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    src.connect(filt);
+    filt.connect(g);
+    g.connect(getMaster());
+    src.start(now);
+    src.stop(now + 0.4);
+  };
 
-| Type | Example |
-|------|---------|
-| Short | `suno.com/s/r4t4FIFyoU7GTnX8` |
-| Full | `suno.com/song/453a796e-...` |
+  // ── 4. SUCCESS — warm golden arpeggio (C5-E5-G5-C6) ───────────────────
+  const sfxSuccess = () => {
+    const ac    = getAudioCtx();
+    const now   = ac.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5-E5-G5-C6
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.11;
+      osc(freq,       'sine',     t, 0.55, 0.18);
+      osc(freq * 2,   'sine',     t, 0.20, 0.04); // harmonic shimmer
+      osc(freq * 0.5, 'triangle', t, 0.40, 0.06); // warm low
+    });
+    // final chord bloom
+    const chord = [523.25, 659.25, 783.99];
+    chord.forEach(freq => {
+      osc(freq, 'sine', now + 0.45, 0.8, 0.07);
+    });
+    // sparkle noise
+    noise(0.12, 0.04, now + 0.44, 5000, 2);
+  };
 
-### Hosting
+  // ── 5. ERROR — descending dissonant drop ───────────────────────────────
+  const sfxError = () => {
+    const ac  = getAudioCtx();
+    const now = ac.currentTime;
+    osc(440, 'sawtooth', now,       0.22, 0.12, 260);
+    osc(293, 'square',   now + 0.1, 0.18, 0.08, 196);
+    // low thud at end
+    osc(90,  'sine',     now + 0.22, 0.12, 0.14, 55);
+    noise(0.06, 0.05, now + 0.22, 400, 2);
+  };
 
-**Vercel** (free, recommended)
+  // ── 6. INPUT FOCUS — barely-there glass chime ──────────────────────────
+  const sfxFocus = () => {
+    const ac  = getAudioCtx();
+    const now = ac.currentTime;
+    osc(1760, 'sine', now, 0.22, 0.04);
+    osc(2217, 'sine', now + 0.04, 0.16, 0.02);
+  };
 
-1. Push this repo to GitHub
-2. Go to [vercel.com](https://vercel.com) → **Add New Project**
-3. Import the repo, Framework: **Other**
-4. Hit **Deploy** — done
+  // ── 7. PAGE LOAD — subtle intro shimmer ────────────────────────────────
+  const sfxIntro = () => {
+    const ac    = getAudioCtx();
+    const now   = ac.currentTime + 0.5; // slight delay after page ready
+    const scale = [261.63, 329.63, 392, 523.25, 659.25]; // C-E-G-C-E
+    scale.forEach((freq, i) => {
+      osc(freq,     'sine',     now + i * 0.08, 0.6,  0.06 - i * 0.005);
+      osc(freq * 2, 'sine',     now + i * 0.08, 0.35, 0.02);
+    });
+    // final warm wash
+    osc(130.81, 'sine', now + 0.5, 1.2, 0.09);
+    noise(0.4, 0.025, now + 0.45, 3000, 1.5);
+  };
 
-**Python hosting** (Railway, Render, VPS)
+  // Trigger intro on first interaction (autoplay policy)
+  let introPlayed = false;
+  const playIntro = () => {
+    if (!introPlayed) {
+      introPlayed = true;
+      sfxIntro();
+    }
+  };
 
-```bash
-python get_full_url.py
-```
+  // ── Attach sound events ─────────────────────────────────────────────────
+  const downloadBtn = document.getElementById('downloadBtn');
+  const urlInput    = document.getElementById('url');
 
+  // ── Particle burst on click ──────────────────────────────────────────────
+  const burst = (x, y) => {
+    const colors = ['#fb923c','#f97316','#ea580c','#fed7aa','#fff7ed','#ffffff'];
+    const count  = 18;
+    for (let i = 0; i < count; i++) {
+      const p   = document.createElement('div');
+      p.className = 'particle';
+      const size  = 4 + Math.random() * 7;
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      const dist  = 40 + Math.random() * 70;
+      const dx    = Math.cos(angle) * dist;
+      const dy    = Math.sin(angle) * dist;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      p.style.cssText = `
+        width:${size}px; height:${size}px;
+        left:${x}px; top:${y}px;
+        background:${color};
+        box-shadow: 0 0 ${size * 2}px ${color};
+        transform: translate(-50%,-50%);
+      `;
+      document.body.appendChild(p);
+      const dur = 500 + Math.random() * 400;
+      p.animate([
+        { transform: `translate(-50%,-50%) translate(0,0) scale(1)`, opacity: 1 },
+        { transform: `translate(-50%,-50%) translate(${dx}px,${dy}px) scale(0)`, opacity: 0 }
+      ], { duration: dur, easing: 'cubic-bezier(0,0.9,0.57,1)', fill: 'forwards' })
+        .onfinish = () => p.remove();
+    }
+  };
 
+  // Hover on button
+  let hoverCooldown = false;
+  downloadBtn.addEventListener('mouseenter', () => {
+    playIntro();
+    if (hoverCooldown) return;
+    hoverCooldown = true;
+    sfxHover();
+    setTimeout(() => hoverCooldown = false, 180);
+  });
 
----
+  // Click burst
+  downloadBtn.addEventListener('mousedown', (e) => {
+    burst(e.clientX, e.clientY);
+  });
 
-<div align="center">
+  // Input focus
+  urlInput.addEventListener('focus', () => {
+    playIntro();
+    sfxFocus();
+  });
 
-<br/>
+  // Keyboard typing — subtle random key ticks
+  const keyFreqs = [1047, 1175, 1319, 1397, 1568, 1760, 1976];
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') return; // handled by download
+    const ac  = getAudioCtx();
+    const now = ac.currentTime;
+    const f   = keyFreqs[Math.floor(Math.random() * keyFreqs.length)];
+    osc(f, 'sine', now, 0.05, 0.018);
+    noise(0.025, 0.018, now, 2800, 4);
+  });
 
-*Not affiliated with Suno Inc. · For personal use only*
+  // ── logic (original, sound-enhanced) ────────────────────────────────────
+  const spinner       = document.getElementById('spinner') || {};
+  const btnIcon       = document.getElementById('btnIcon');
+  const statusMessage = document.getElementById('statusMessage');
+  let statusTimer     = null;
 
-</div>
+  document.getElementById("url").value = window.location.href.replace("ssuno", "suno");
+
+  const validateUrl = (url) => {
+    try {
+      const parsedUrl = new URL(url);
+      if (!parsedUrl.hostname.endsWith('suno.com')) return false;
+      const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+      if (pathParts[0] === 's') return pathParts.length === 2;
+      if (pathParts[0] === 'song') {
+        if (pathParts.length !== 2) return false;
+        if (!/^[a-z0-9\-]+$/i.test(pathParts[1])) return false;
+        if (!parsedUrl.searchParams.has('sh')) return false;
+        return true;
+      }
+      return false;
+    } catch (e) { return false; }
+  };
+
+  const sendShortLinkToServer = async (url) => {
+    try {
+      const response = await fetch('/api/get_full_url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      if (!response.ok) throw new Error('Network error while resolving link');
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      return data.full_url;
+    } catch (error) {
+      throw new Error(`Short link error: ${error.message}`);
+    }
+  };
+
+  const extractIdFromUrl = async (url) => {
+    try {
+      const parsedUrl = new URL(url);
+      const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+      if (pathParts[0] === 's' && pathParts.length === 2) {
+        const fullUrl = await sendShortLinkToServer(url);
+        return extractIdFromUrl(fullUrl);
+      }
+      if (pathParts[0] === 'song') return pathParts[1];
+      return null;
+    } catch (e) {
+      throw new Error(`ID extraction error: ${e.message}`);
+    }
+  };
+
+  const showStatusMessage = (type, message) => {
+    if (statusTimer) clearTimeout(statusTimer);
+    statusMessage.className = 'status ' + (type === 'success' ? 'success' : 'error');
+    statusMessage.textContent = message;
+    void statusMessage.offsetWidth; // force reflow to restart animation
+    statusMessage.classList.add('show');
+    statusTimer = setTimeout(() => statusMessage.classList.remove('show'), 3000);
+    if (type === 'success') sfxSuccess();
+    else sfxError();
+  };
+
+  const handleDownload = async () => {
+    playIntro();
+    sfxClick();
+
+    const url = urlInput.value.trim();
+    if (!url) { showStatusMessage('error', 'enter a url first'); return; }
+    if (!validateUrl(url)) {
+      showStatusMessage('error', 'need suno.com/song/... or suno.com/s/...');
+      return;
+    }
+
+    sfxWhoosh();
+
+    downloadBtn.classList.add('loading');
+    downloadBtn.disabled  = true;
+
+    try {
+      const id = await extractIdFromUrl(url);
+      if (!id) throw new Error('could not extract track id');
+      const link = document.createElement('a');
+      link.href = `https://cdn1.suno.ai/${id}.mp3`;
+      link.download = `${id}.mp3`;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showStatusMessage('success', '🎵 download started');
+    } catch (error) {
+      showStatusMessage('error', error.message || 'something went wrong');
+    } finally {
+      downloadBtn.classList.remove('loading');
+      downloadBtn.disabled  = false;
+    }
+  };
+
+  downloadBtn.addEventListener('click', handleDownload);
+  urlInput.addEventListener('input', () => { });
+  urlInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleDownload(); });
+</script>
+</body>
+</html>
