@@ -680,6 +680,7 @@ for (let i = 0; i < WV_COUNT; i++) {
 let accentRgb = [251, 146, 60];
 let accentLightRgb = [255, 200, 100];
 
+// apply default theme on boot (no animation)
 
 const canvas = document.getElementById('stars');
 const ctx    = canvas.getContext('2d');
@@ -818,128 +819,111 @@ let statusTimer  = null;
 let currentId    = null;
 let currentCoverUrl = null;
 
+// boot — apply default orange theme
+setTimeout(() => applyTheme(0, false), 0);
+
 // ══════════════════════════════════════════════════════════════════════════════
 // 🎨 COLOR EXTRACTION + THEME ENGINE
 // ══════════════════════════════════════════════════════════════════════════════
 
-// RGB → HSL
-const rgbToHsl = (r,g,b) => {
-  r/=255; g/=255; b/=255;
-  const max=Math.max(r,g,b), min=Math.min(r,g,b);
-  let h,s,l=(max+min)/2;
-  if (max===min) { h=s=0; }
-  else {
-    const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min);
-    switch(max){ case r:h=((g-b)/d+(g<b?6:0))/6;break; case g:h=((b-r)/d+2)/6;break; default:h=((r-g)/d+4)/6; }
-  }
-  return [h*360, s*100, l*100];
-};
+// ══════════════════════════════════════════════════════════════════════════════
+// 🎨 PRESET THEME ENGINE
+// ══════════════════════════════════════════════════════════════════════════════
+const THEMES = [
+  // 0 — default orange (starting state, returned on reset)
+  { name:'ember',    bg:'#0a0602', main:[251,146,60],  dark:[234,88,12],   light:[254,215,170] },
+  // music themes
+  { name:'violet',   bg:'#080610', main:[167,139,250], dark:[124,58,237],  light:[221,214,254] },
+  { name:'rose',     bg:'#0d0508', main:[251,113,133], dark:[225,29,72],   light:[254,205,211] },
+  { name:'cyan',     bg:'#010e10', main:[34,211,238],  dark:[8,145,178],   light:[165,243,252] },
+  { name:'lime',     bg:'#040a01', main:[163,230,53],  dark:[101,163,13],  light:[217,249,157] },
+  { name:'indigo',   bg:'#03030f', main:[129,140,248], dark:[79,70,229],   light:[199,210,254] },
+  { name:'amber',    bg:'#0a0800', main:[251,191,36],  dark:[217,119,6],   light:[254,243,199] },
+  { name:'pink',     bg:'#0d0209', main:[232,121,249], dark:[192,38,211],  light:[245,208,254] },
+  { name:'teal',     bg:'#011009', main:[45,212,191],  dark:[13,148,136],  light:[153,246,228] },
+  { name:'red',      bg:'#0d0202', main:[248,113,113], dark:[220,38,38],   light:[254,202,202] },
+];
 
-// HSL → hex
-const hslToHex = (h,s,l) => {
-  s/=100; l/=100;
-  const a=s*Math.min(l,1-l);
-  const f=n=>{ const k=(n+h/30)%12; const c=l-a*Math.max(Math.min(k-3,9-k,1),-1); return Math.round(255*c).toString(16).padStart(2,'0'); };
-  return '#'+f(0)+f(8)+f(4);
-};
+let currentThemeIdx = 0;
 
-// HSL → rgb array
-const hslToRgb = (h,s,l) => {
-  s/=100; l/=100;
-  const a=s*Math.min(l,1-l);
-  const f=n=>{ const k=(n+h/30)%12; return Math.round(255*(l-a*Math.max(Math.min(k-3,9-k,1),-1))); };
-  return [f(0),f(8),f(4)];
-};
+const applyTheme = (idx, animate = true) => {
+  const t = THEMES[idx];
+  const [mr,mg,mb] = t.main;
+  const [dr,dg,db] = t.dark;
+  const [lr,lg,lb] = t.light;
 
-const extractAndApplyTheme = (img) => {
-  try {
-    const cv = document.createElement('canvas');
-    cv.width = cv.height = 60;
-    const cx = cv.getContext('2d');
-    cx.drawImage(img, 0, 0, 60, 60);
-    const data = cx.getImageData(0, 0, 60, 60).data;
+  accentRgb      = [mr,mg,mb];
+  accentLightRgb = [lr,lg,lb];
 
-    // collect saturated, mid-brightness pixels
-    let rS=0,gS=0,bS=0,cnt=0;
-    for (let i=0;i<data.length;i+=4) {
-      const r=data[i],g=data[i+1],b=data[i+2];
-      const br=(r+g+b)/3;
-      const sat=Math.max(r,g,b)-Math.min(r,g,b);
-      if (br>35 && br<215 && sat>40) { rS+=r;gS+=g;bS+=b;cnt++; }
+  const hex  = `#${mr.toString(16).padStart(2,'0')}${mg.toString(16).padStart(2,'0')}${mb.toString(16).padStart(2,'0')}`;
+  const dHex = `#${dr.toString(16).padStart(2,'0')}${dg.toString(16).padStart(2,'0')}${db.toString(16).padStart(2,'0')}`;
+  const lHex = `#${lr.toString(16).padStart(2,'0')}${lg.toString(16).padStart(2,'0')}${lb.toString(16).padStart(2,'0')}`;
+
+  const tr = animate ? 'transition: color 0.8s, background 0.8s, border-color 0.8s, box-shadow 0.8s;' : '';
+
+  dynTheme.textContent = `
+    :root {
+      --c1:${hex}; --c2:${hex}; --c3:${dHex};
+      --c-glow:rgba(${mr},${mg},${mb},0.4);
+      --c-glow2:rgba(${dr},${dg},${db},0.12);
+      --c-glow3:rgba(${mr},${mg},${mb},0.06);
+      --c-ring1:rgba(${mr},${mg},${mb},0.15);
+      --c-border:rgba(${mr},${mg},${mb},0.22);
+      --c-border-focus:rgba(${mr},${mg},${mb},0.6);
+      --c-shadow:rgba(${mr},${mg},${mb},0.35);
+      --c-shadow2:rgba(${mr},${mg},${mb},0.6);
+      --c-shadow3:rgba(${mr},${mg},${mb},0.15);
+      --c-wv-played:rgba(${mr},${mg},${mb},0.75);
+      --c-wv-active:${hex};
+      --c-wv-glow:rgba(${mr},${mg},${mb},0.6);
+      --c-btn-bg1:${hex}; --c-btn-bg2:${dHex};
+      --c-progress1:${dHex}; --c-progress2:${hex};
+      --c-play-bg:rgba(${mr},${mg},${mb},0.12);
+      --c-play-border:rgba(${mr},${mg},${mb},0.3);
+      --c-play-glow:rgba(${mr},${mg},${mb},0.4);
+      --c-dl-border:rgba(${mr},${mg},${mb},0.28);
+      --c-dl-text:${hex};
+      --c-dl-bg:rgba(${mr},${mg},${mb},0.08);
+      --c-dl-bg2:rgba(${mr},${mg},${mb},0.18);
+      --c-card-border:rgba(${mr},${mg},${mb},0.2);
+      --c-cover-bg:rgba(${mr},${mg},${mb},0.08);
+      --c-cover-border:rgba(${mr},${mg},${mb},0.15);
+      --c-sub:rgba(${mr},${mg},${mb},0.3);
+      --c-source:rgba(${mr},${mg},${mb},0.5);
+      --c-spin1:rgba(${mr},${mg},${mb},0.7);
+      --c-spin2:rgba(${mr},${mg},${mb},0.3);
     }
-    if (!cnt) return; // keep default orange
-
-    const [h,s,l] = rgbToHsl(Math.round(rS/cnt), Math.round(gS/cnt), Math.round(bS/cnt));
-
-    // clamp: boost saturation, keep lightness comfortable
-    const hs = Math.max(s, 55);
-    const hl = Math.min(Math.max(l, 42), 62);
-
-    const main  = hslToHex(h, hs,     hl);
-    const dark  = hslToHex(h, hs+5,   Math.max(hl-16,25));
-    const light = hslToHex(h, hs-12,  Math.min(hl+28,88));
-    const mid   = hslToHex(h, hs,     Math.min(hl+8,70));
-
-    const [mr,mg,mb]   = hslToRgb(h, hs, hl);
-    const [dr,dg,db]   = hslToRgb(h, hs+5, Math.max(hl-16,25));
-    const [lr2,lg2,lb2]= hslToRgb(h, hs-12, Math.min(hl+28,88));
-
-    // update canvas star color
-    accentRgb      = [mr,mg,mb];
-    accentLightRgb = [lr2,lg2,lb2];
-
-    // body bg — very dark tint of hue
-    const bgHex = hslToHex(h, Math.min(hs,30), 4);
-
-    // inject CSS overrides
-    dynTheme.textContent = `
-      :root {
-        --c1:${main}; --c2:${mid}; --c3:${dark};
-        --c-glow:rgba(${mr},${mg},${mb},0.4);
-        --c-glow2:rgba(${dr},${dg},${db},0.12);
-        --c-glow3:rgba(${mr},${mg},${mb},0.05);
-        --c-ring1:rgba(${mr},${mg},${mb},0.15);
-        --c-border:rgba(${mr},${mg},${mb},0.22);
-        --c-border-focus:rgba(${mr},${mg},${mb},0.6);
-        --c-shadow:rgba(${mr},${mg},${mb},0.35);
-        --c-shadow2:rgba(${mr},${mg},${mb},0.6);
-        --c-shadow3:rgba(${mr},${mg},${mb},0.15);
-        --c-wv-played:rgba(${mr},${mg},${mb},0.75);
-        --c-wv-active:${main};
-        --c-wv-glow:rgba(${mr},${mg},${mb},0.6);
-        --c-btn-bg1:${main}; --c-btn-bg2:${dark};
-        --c-progress1:${dark}; --c-progress2:${main};
-        --c-play-bg:rgba(${mr},${mg},${mb},0.12);
-        --c-play-border:rgba(${mr},${mg},${mb},0.3);
-        --c-play-glow:rgba(${mr},${mg},${mb},0.35);
-        --c-dl-border:rgba(${mr},${mg},${mb},0.25);
-        --c-dl-text:${main};
-        --c-dl-bg:rgba(${mr},${mg},${mb},0.08);
-        --c-dl-bg2:rgba(${mr},${mg},${mb},0.15);
-        --c-card-border:rgba(${mr},${mg},${mb},0.2);
-        --c-cover-bg:rgba(${mr},${mg},${mb},0.08);
-        --c-cover-border:rgba(${mr},${mg},${mb},0.15);
-        --c-sub:rgba(${mr},${mg},${mb},0.3);
-        --c-source:rgba(${mr},${mg},${mb},0.5);
-        --c-spin1:rgba(${mr},${mg},${mb},0.7);
-        --c-spin2:rgba(${mr},${mg},${mb},0.3);
-      }
-      body { background: ${bgHex}; transition: background 1.2s ease; }
-      h1 .load {
-        background: linear-gradient(90deg, ${main}, ${mid}, ${dark}) !important;
-        -webkit-background-clip: text !important;
-        background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-      }
-    `;
-  } catch(e) { /* keep default */ }
+    body { background: ${t.bg} !important; ${animate ? 'transition: background 0.9s ease;' : ''} }
+    h1 .load {
+      background: linear-gradient(90deg, ${hex}, ${lHex}, ${dHex}) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-size: 200% !important;
+    }
+    .glow-bg {
+      background:
+        radial-gradient(ellipse 65% 55% at 15% 20%, rgba(${mr},${mg},${mb},0.15) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 50% at 85% 80%, rgba(${dr},${dg},${db},0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(${mr},${mg},${mb},0.06) 0%, transparent 70%) !important;
+    }
+  `;
 };
 
 const resetTheme = () => {
-  dynTheme.textContent = '';
-  accentRgb      = [251,146,60];
-  accentLightRgb = [255,200,100];
+  currentThemeIdx = 0;
+  applyTheme(0, true);
 };
+
+// pick a random theme that's different from current
+const pickNextTheme = () => {
+  let next;
+  do { next = 1 + Math.floor(Math.random() * (THEMES.length - 1)); }
+  while (next === currentThemeIdx);
+  currentThemeIdx = next;
+  applyTheme(next, true);
+};
+
 
 
 const showStatus = (type, msg) => {
@@ -1137,7 +1121,7 @@ const loadTrack = async () => {
       currentCoverUrl = imgUrl;
       coverBlur.style.backgroundImage = `url(${imgUrl})`;
       coverBlur.classList.add('show');
-      extractAndApplyTheme(coverImg);
+      pickNextTheme();
     };
     coverImg.onerror = () => {
       const png = `https://cdn2.suno.ai/image_${id}.png`;
@@ -1146,7 +1130,7 @@ const loadTrack = async () => {
         currentCoverUrl = png;
         coverBlur.style.backgroundImage=`url(${png})`;
         coverBlur.classList.add('show');
-        extractAndApplyTheme(coverImg);
+        pickNextTheme();
       };
       coverImg.onerror = () => {}; // keep placeholder
       coverImg.src = png;
@@ -1181,13 +1165,17 @@ urlInput.addEventListener('keypress', e => { if(e.key==='Enter') loadTrack(); })
 
 // ── hide player the moment URL changes ───────────────────────────────────────
 urlInput.addEventListener('input', () => {
-  if (!playerWrap.classList.contains('show')) return;
+  if (urlInput.value.trim() === '' || !playerWrap.classList.contains('show')) {
+    if (urlInput.value.trim() === '') resetTheme();
+    if (!playerWrap.classList.contains('show')) return;
+  }
   playerWrap.classList.remove('show');
   coverBlur.classList.remove('show');
   coverBlur.style.backgroundImage = '';
   audioEl.pause();
   audioEl.src = '';
   currentId = null;
+  currentCoverUrl = null;
   coverImg.classList.remove('loaded');
   coverImg.src = '';
   coverWrap.classList.remove('playing');
@@ -1197,6 +1185,7 @@ urlInput.addEventListener('input', () => {
   timeCurEl.textContent = '0:00';
   timeDurEl.textContent = '—:——';
   updateWaveform(0);
+  if (urlInput.value.trim() === '') resetTheme();
 });
 
 document.getElementById("url").value = window.location.href.replace("ssuno","suno");
