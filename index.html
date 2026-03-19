@@ -8,6 +8,43 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --c1: #fb923c;
+    --c2: #f97316;
+    --c3: #ea580c;
+    --c-glow: rgba(251,146,60,0.4);
+    --c-glow2: rgba(234,88,12,0.12);
+    --c-glow3: rgba(251,146,60,0.05);
+    --c-ring1: rgba(251,146,60,0.15);
+    --c-border: rgba(251,146,60,0.2);
+    --c-border-focus: rgba(251,146,60,0.55);
+    --c-shadow: rgba(251,146,60,0.3);
+    --c-shadow2: rgba(251,146,60,0.55);
+    --c-shadow3: rgba(251,146,60,0.15);
+    --c-wv-played: rgba(251,146,60,0.75);
+    --c-wv-active: #fb923c;
+    --c-wv-glow: rgba(251,146,60,0.6);
+    --c-btn-bg1: #fb923c;
+    --c-btn-bg2: #ea580c;
+    --c-progress1: #ea580c;
+    --c-progress2: #fb923c;
+    --c-play-bg: rgba(251,146,60,0.12);
+    --c-play-border: rgba(251,146,60,0.3);
+    --c-play-glow: rgba(251,146,60,0.35);
+    --c-dl-border: rgba(251,146,60,0.25);
+    --c-dl-text: #fb923c;
+    --c-dl-bg: rgba(251,146,60,0.08);
+    --c-dl-bg2: rgba(251,146,60,0.15);
+    --c-card-border: rgba(251,146,60,0.18);
+    --c-cover-bg: rgba(251,146,60,0.08);
+    --c-cover-border: rgba(251,146,60,0.15);
+    --c-sub: rgba(251,146,60,0.3);
+    --c-source: rgba(251,146,60,0.5);
+    --c-spin1: rgba(251,146,60,0.7);
+    --c-spin2: rgba(251,146,60,0.3);
+    transition: none;
+  }
+
   body {
     background: #0a0602;
     font-family: 'Syne', sans-serif;
@@ -22,11 +59,12 @@
   .glow-bg {
     position: fixed; inset: 0; z-index: 0;
     background:
-      radial-gradient(ellipse 65% 55% at 15% 20%, rgba(251,146,60,0.15) 0%, transparent 65%),
-      radial-gradient(ellipse 50% 50% at 85% 80%, rgba(234,88,12,0.12) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(251,146,60,0.05) 0%, transparent 70%);
+      radial-gradient(ellipse 65% 55% at 15% 20%, var(--c-ring1) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 50% at 85% 80%, var(--c-glow2) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, var(--c-glow3) 0%, transparent 70%);
     animation: breathe 8s ease-in-out infinite alternate;
     pointer-events: none;
+    transition: background 1.2s ease;
   }
   @keyframes breathe { 0% { opacity:.7; } 100% { opacity:1; } }
 
@@ -63,9 +101,10 @@
   }
   .wave-bar {
     width: 3px; border-radius: 2px;
-    background: linear-gradient(to top, #ea580c, #fb923c, #fed7aa);
+    background: linear-gradient(to top, var(--c3), var(--c1), #fed7aa);
     animation: waveAnim var(--d) ease-in-out infinite alternate;
     opacity: 0.7;
+    transition: background 1.2s ease;
   }
   @keyframes waveAnim { from { transform:scaleY(0.15); } to { transform:scaleY(1); } }
 
@@ -498,7 +537,16 @@
   }
 
   @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+
+  /* ── dynamic theme vars (overridden by JS) ─────────────────────────── */
+  :root {
+    --a1: #fb923c;
+    --a2: #ea580c;
+    --a3: #fed7aa;
+    --a1r: 251; --a1g: 146; --a1b: 60;
+  }
 </style>
+<style id="dynTheme"></style>
 </head>
 <body>
 
@@ -578,12 +626,22 @@
         </button>
 
         <!-- download -->
-        <button class="dl-btn" id="dlBtn">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          MP3
-        </button>
+        <div style="display:flex;gap:0.4rem;">
+          <button class="dl-btn" id="dlBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            MP3
+          </button>
+          <button class="dl-btn" id="dlCoverBtn" title="Download cover">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+              <path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Cover
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -618,7 +676,11 @@ for (let i = 0; i < WV_COUNT; i++) {
   wvBars.push(b);
 }
 
-// ── stars ────────────────────────────────────────────────────────────────────
+// ── accent color (updated by theme engine) ───────────────────────────────────
+let accentRgb = [251, 146, 60];
+let accentLightRgb = [255, 200, 100];
+
+
 const canvas = document.getElementById('stars');
 const ctx    = canvas.getContext('2d');
 let W, H, stars = [];
@@ -633,12 +695,14 @@ const drawStars = () => {
     s.pulse += s.pulseSpeed;
     const opacity = s.op*(0.5+0.5*Math.sin(s.pulse));
     if (s.orange) {
+      const [r,g,b] = accentRgb;
       const grd = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*4);
-      grd.addColorStop(0,`rgba(251,146,60,${opacity*0.5})`);
-      grd.addColorStop(1,'rgba(251,146,60,0)');
+      grd.addColorStop(0,`rgba(${r},${g},${b},${opacity*0.5})`);
+      grd.addColorStop(1,`rgba(${r},${g},${b},0)`);
       ctx.fillStyle = grd;
       ctx.beginPath(); ctx.arc(s.x,s.y,s.r*4,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = `rgba(255,200,100,${opacity})`;
+      const [lr,lg,lb] = accentLightRgb;
+      ctx.fillStyle = `rgba(${lr},${lg},${lb},${opacity})`;
     } else { ctx.fillStyle = `rgba(255,255,255,${opacity})`; }
     ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
     s.x += Math.cos(s.dir)*s.speed*0.3; s.y += Math.sin(s.dir)*s.speed*0.3;
@@ -746,10 +810,137 @@ const pauseIcon     = document.getElementById('pauseIcon');
 const muteBtn       = document.getElementById('muteBtn');
 const volumeSlider  = document.getElementById('volumeSlider');
 const dlBtn         = document.getElementById('dlBtn');
+const dlCoverBtn    = document.getElementById('dlCoverBtn');
 const audioEl       = document.getElementById('audioEl');
+const dynTheme      = document.getElementById('dynTheme');
 
-let statusTimer = null;
-let currentId   = null;
+let statusTimer  = null;
+let currentId    = null;
+let currentCoverUrl = null;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 🎨 COLOR EXTRACTION + THEME ENGINE
+// ══════════════════════════════════════════════════════════════════════════════
+
+// RGB → HSL
+const rgbToHsl = (r,g,b) => {
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h,s,l=(max+min)/2;
+  if (max===min) { h=s=0; }
+  else {
+    const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min);
+    switch(max){ case r:h=((g-b)/d+(g<b?6:0))/6;break; case g:h=((b-r)/d+2)/6;break; default:h=((r-g)/d+4)/6; }
+  }
+  return [h*360, s*100, l*100];
+};
+
+// HSL → hex
+const hslToHex = (h,s,l) => {
+  s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{ const k=(n+h/30)%12; const c=l-a*Math.max(Math.min(k-3,9-k,1),-1); return Math.round(255*c).toString(16).padStart(2,'0'); };
+  return '#'+f(0)+f(8)+f(4);
+};
+
+// HSL → rgb array
+const hslToRgb = (h,s,l) => {
+  s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{ const k=(n+h/30)%12; return Math.round(255*(l-a*Math.max(Math.min(k-3,9-k,1),-1))); };
+  return [f(0),f(8),f(4)];
+};
+
+const extractAndApplyTheme = (img) => {
+  try {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 60;
+    const cx = cv.getContext('2d');
+    cx.drawImage(img, 0, 0, 60, 60);
+    const data = cx.getImageData(0, 0, 60, 60).data;
+
+    // collect saturated, mid-brightness pixels
+    let rS=0,gS=0,bS=0,cnt=0;
+    for (let i=0;i<data.length;i+=4) {
+      const r=data[i],g=data[i+1],b=data[i+2];
+      const br=(r+g+b)/3;
+      const sat=Math.max(r,g,b)-Math.min(r,g,b);
+      if (br>35 && br<215 && sat>40) { rS+=r;gS+=g;bS+=b;cnt++; }
+    }
+    if (!cnt) return; // keep default orange
+
+    const [h,s,l] = rgbToHsl(Math.round(rS/cnt), Math.round(gS/cnt), Math.round(bS/cnt));
+
+    // clamp: boost saturation, keep lightness comfortable
+    const hs = Math.max(s, 55);
+    const hl = Math.min(Math.max(l, 42), 62);
+
+    const main  = hslToHex(h, hs,     hl);
+    const dark  = hslToHex(h, hs+5,   Math.max(hl-16,25));
+    const light = hslToHex(h, hs-12,  Math.min(hl+28,88));
+    const mid   = hslToHex(h, hs,     Math.min(hl+8,70));
+
+    const [mr,mg,mb]   = hslToRgb(h, hs, hl);
+    const [dr,dg,db]   = hslToRgb(h, hs+5, Math.max(hl-16,25));
+    const [lr2,lg2,lb2]= hslToRgb(h, hs-12, Math.min(hl+28,88));
+
+    // update canvas star color
+    accentRgb      = [mr,mg,mb];
+    accentLightRgb = [lr2,lg2,lb2];
+
+    // body bg — very dark tint of hue
+    const bgHex = hslToHex(h, Math.min(hs,30), 4);
+
+    // inject CSS overrides
+    dynTheme.textContent = `
+      :root {
+        --c1:${main}; --c2:${mid}; --c3:${dark};
+        --c-glow:rgba(${mr},${mg},${mb},0.4);
+        --c-glow2:rgba(${dr},${dg},${db},0.12);
+        --c-glow3:rgba(${mr},${mg},${mb},0.05);
+        --c-ring1:rgba(${mr},${mg},${mb},0.15);
+        --c-border:rgba(${mr},${mg},${mb},0.22);
+        --c-border-focus:rgba(${mr},${mg},${mb},0.6);
+        --c-shadow:rgba(${mr},${mg},${mb},0.35);
+        --c-shadow2:rgba(${mr},${mg},${mb},0.6);
+        --c-shadow3:rgba(${mr},${mg},${mb},0.15);
+        --c-wv-played:rgba(${mr},${mg},${mb},0.75);
+        --c-wv-active:${main};
+        --c-wv-glow:rgba(${mr},${mg},${mb},0.6);
+        --c-btn-bg1:${main}; --c-btn-bg2:${dark};
+        --c-progress1:${dark}; --c-progress2:${main};
+        --c-play-bg:rgba(${mr},${mg},${mb},0.12);
+        --c-play-border:rgba(${mr},${mg},${mb},0.3);
+        --c-play-glow:rgba(${mr},${mg},${mb},0.35);
+        --c-dl-border:rgba(${mr},${mg},${mb},0.25);
+        --c-dl-text:${main};
+        --c-dl-bg:rgba(${mr},${mg},${mb},0.08);
+        --c-dl-bg2:rgba(${mr},${mg},${mb},0.15);
+        --c-card-border:rgba(${mr},${mg},${mb},0.2);
+        --c-cover-bg:rgba(${mr},${mg},${mb},0.08);
+        --c-cover-border:rgba(${mr},${mg},${mb},0.15);
+        --c-sub:rgba(${mr},${mg},${mb},0.3);
+        --c-source:rgba(${mr},${mg},${mb},0.5);
+        --c-spin1:rgba(${mr},${mg},${mb},0.7);
+        --c-spin2:rgba(${mr},${mg},${mb},0.3);
+      }
+      body { background: ${bgHex}; transition: background 1.2s ease; }
+      h1 .load {
+        background: linear-gradient(90deg, ${main}, ${mid}, ${dark}) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+      }
+    `;
+  } catch(e) { /* keep default */ }
+};
+
+const resetTheme = () => {
+  dynTheme.textContent = '';
+  accentRgb      = [251,146,60];
+  accentLightRgb = [255,200,100];
+};
+
 
 const showStatus = (type, msg) => {
   if (statusTimer) clearTimeout(statusTimer);
@@ -855,7 +1046,27 @@ dlBtn.addEventListener('click', async () => {
   }
 });
 
-// ── main load btn ────────────────────────────────────────────────────────────
+// ── cover download ────────────────────────────────────────────────────────────
+dlCoverBtn.addEventListener('click', async () => {
+  if (!currentId || !currentCoverUrl) return;
+  sfxWhoosh();
+  const r = dlCoverBtn.getBoundingClientRect();
+  burst(r.left + r.width/2, r.top + r.height/2);
+  try {
+    const res = await fetch(currentCoverUrl);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `${currentId}_cover.jpg`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 5000);
+    showStatus('success','🖼️ cover downloaded');
+  } catch {
+    window.open(currentCoverUrl, '_blank');
+    showStatus('success','🖼️ cover opened');
+  }
+});
 let hoverCooldown = false;
 downloadBtn.addEventListener('mouseenter', () => {
   playIntro();
@@ -920,15 +1131,23 @@ const loadTrack = async () => {
 
     // set cover — try jpeg then png
     const imgUrl = `https://cdn2.suno.ai/image_${id}.jpeg`;
+    coverImg.crossOrigin = 'anonymous';
     coverImg.onload = () => {
       coverImg.classList.add('loaded');
+      currentCoverUrl = imgUrl;
       coverBlur.style.backgroundImage = `url(${imgUrl})`;
       coverBlur.classList.add('show');
+      extractAndApplyTheme(coverImg);
     };
     coverImg.onerror = () => {
-      // try png fallback
       const png = `https://cdn2.suno.ai/image_${id}.png`;
-      coverImg.onload = () => { coverImg.classList.add('loaded'); coverBlur.style.backgroundImage=`url(${png})`; coverBlur.classList.add('show'); };
+      coverImg.onload = () => {
+        coverImg.classList.add('loaded');
+        currentCoverUrl = png;
+        coverBlur.style.backgroundImage=`url(${png})`;
+        coverBlur.classList.add('show');
+        extractAndApplyTheme(coverImg);
+      };
       coverImg.onerror = () => {}; // keep placeholder
       coverImg.src = png;
     };
