@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suno MP3</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0b;
+    font-family: 'DM Sans', sans-serif;
+    color: #f0ede8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 15%, rgba(123,94,167,0.13) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 45% at 85% 85%, rgba(232,80,91,0.09) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .wrap {
+    position: relative;
+    width: 100%; max-width: 440px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2rem;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 0.55rem;
+    opacity: 0; animation: up 0.5s 0.05s forwards;
+  }
+  .logo-box {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, #f5a623, #e8503a);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-box svg { width: 16px; height: 16px; }
+  .logo-text { font-family: 'Instrument Serif', serif; font-size: 1.1rem; }
+  .logo-text b { color: #f5a623; font-weight: 400; }
+  .heading {
+    text-align: center;
+    opacity: 0; animation: up 0.5s 0.12s forwards;
+  }
+  .heading h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(1.9rem, 6vw, 2.6rem);
+    font-weight: 400; line-height: 1.1; margin-bottom: 0.6rem;
+  }
+  .heading h1 em { font-style: italic; color: #f5a623; }
+  .heading p { font-size: 0.875rem; color: rgba(240,237,232,0.45); font-weight: 300; }
+  .card {
+    width: 100%;
+    background: #111113;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px; padding: 1.5rem; position: relative;
+    opacity: 0; animation: up 0.5s 0.2s forwards;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245,166,35,0.45), transparent);
+  }
+  .field { position: relative; margin-bottom: 0.85rem; }
+  .field-icon {
+    position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+    color: rgba(240,237,232,0.35); pointer-events: none;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: #1a1a1e;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 11px;
+    padding: 0.8rem 1rem 0.8rem 2.6rem;
+    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; color: #f0ede8;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="text"]::placeholder { color: rgba(240,237,232,0.35); }
+  input[type="text"]:focus {
+    border-color: rgba(245,166,35,0.4);
+    box-shadow: 0 0 0 3px rgba(245,166,35,0.07);
+  }
+  .button {
+    width: 100%; padding: 0.8rem; border: none; border-radius: 11px;
+    background: linear-gradient(135deg, #f5a623, #e8783a);
+    color: #1a0d00;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    box-shadow: 0 4px 18px rgba(245,166,35,0.28);
+    transition: transform 0.15s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .button::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(rgba(255,255,255,0.12), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 7px 24px rgba(245,166,35,0.38); }
+  .button:hover:not(:disabled)::after { opacity: 1; }
+  .button:active:not(:disabled) { transform: translateY(0); }
+  .button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .spinner {
+    width: 1rem; height: 1rem;
+    border: 2px solid rgba(26,13,0,0.25);
+    border-top: 2px solid rgba(26,13,0,0.85);
+    border-radius: 50%; animation: spin 1s linear infinite;
+  }
+  .status {
+    margin-top: 0.85rem; padding: 0.75rem 0.9rem; border-radius: 9px;
+    font-size: 0.875rem;
+  }
+  .success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .error   { background: rgba(232,80,91,0.1);  border: 1px solid rgba(232,80,91,0.2);  color: #fca5a5; }
+  .footer {
+    font-size: 0.7rem; color: rgba(240,237,232,0.25); text-align: center;
+    opacity: 0; animation: up 0.5s 0.3s forwards;
+  }
+  @keyframes up   { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:none } }
+  @keyframes spin { to { transform: rotate(360deg) } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo">
+    <div class="logo-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M9 18V5l12-2v13" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6" cy="18" r="3" stroke="#fff" stroke-width="2"/>
+        <circle cx="18" cy="16" r="3" stroke="#fff" stroke-width="2"/>
+      </svg>
+    </div>
+    <span class="logo-text">Suno<b>Load</b></span>
+  </div>
+
+  <div class="heading">
+    <h1>Download your <em>music</em></h1>
+    <p>Paste a Suno track link and get your MP3</p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <svg class="field-icon" width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="url" value="">
+    </div>
+
+    <button class="button" id="downloadBtn">
+      <span class="spinner" id="spinner" style="display: none;"></span>
+      Download MP3
+    </button>
+
+    <div id="statusMessage" class="status" style="display: none;"></div>
+  </div>
+
+  <p class="footer">Not affiliated with Suno Inc. · For personal use only</p>
+</div>
+
+<!-- ↓↓↓ ОРИГИНАЛЬНЫЙ СКРИПТ БЕЗ ИЗМЕНЕНИЙ ↓↓↓ -->
+<script>
+        const urlInput = document.getElementById('url');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const spinner = document.getElementById('spinner');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        document.getElementById("url").value = window.location.href.replace("ssuno", "suno");
+
+        const validateUrl = (url) => {
+            try {
+                const parsedUrl = new URL(url);
+                
+                if (!parsedUrl.hostname.endsWith('suno.com')) {
+                    return false;
+                }
+                
+                const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+                
+                // Для коротких ссылок вида /s/...
+                if (pathParts[0] === 's') {
+                    return pathParts.length === 2;
+                }
+                
+                // Для полных ссылок вида /song/...
+                if (pathParts[0] === 'song') {
+                    if (pathParts.length !== 2) return false;
+                    
+                    const idPattern = /^[a-z0-9\-]+$/i;
+                    if (!idPattern.test(pathParts[1])) return false;
+                    
+                    if (!parsedUrl.searchParams.has('sh')) return false;
+                    
+                    return true;
+                }
+                
+                return false;
+            } catch (e) {
+                return false;
+            }
+        };
+
+        const sendShortLinkToServer = async (url) => {
+            try {
+                const response = await fetch('/api/get_full_url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network error while resolving link');
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                return data.full_url;
+
+            } catch (error) {
+                throw new Error(`Short link error: ${error.message}`);
+            }
+        };
+
+        const extractIdFromUrl = async (url) => {
+            try {
+                const parsedUrl = new URL(url);
+                const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+                
+                // Обработка коротких ссылок
+                if (pathParts[0] === 's' && pathParts.length === 2) {
+                    const fullUrl = await sendShortLinkToServer(url);
+                    return extractIdFromUrl(fullUrl);
+                }
+                
+                // Обработка полных ссылок
+                if (pathParts[0] === 'song') {
+                    return pathParts[1];
+                }
+                
+                return null;
+            } catch (e) {
+                throw new Error(`ID extraction error: ${e.message}`);
+            }
+        };
+
+        const showStatusMessage = (type, message) => {
+            statusMessage.style.display = 'block';
+            statusMessage.textContent = message;
+            
+            if (type === 'success') {
+                statusMessage.className = 'status success';
+            } else {
+                statusMessage.className = 'status error';
+            }
+        };
+
+        const handleDownload = async () => {
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showStatusMessage('error', 'Please enter a URL');
+                return;
+            }
+            
+            if (!validateUrl(url)) {
+                showStatusMessage('error', 'Please enter a valid URL: suno.com/song/... or suno.com/s/...');
+                return;
+            }
+
+            spinner.style.display = 'inline-block';
+            downloadBtn.disabled = true;
+            statusMessage.style.display = 'none';
+
+            try {
+                const id = await extractIdFromUrl(url);
+                
+                if (!id) {
+                    throw new Error('Unable to extract ID from URL');
+                }
+                
+                const downloadUrl = `https://cdn1.suno.ai/${id}.mp3`;
+                
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `${id}.mp3`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showStatusMessage('success', 'Download started! 🎵');
+            } catch (error) {
+                showStatusMessage('error', error.message || 'Something went wrong');
+            } finally {
+                spinner.style.display = 'none';
+                downloadBtn.disabled = false;
+            }
+        };
+
+        downloadBtn.addEventListener('click', handleDownload);
+        
+        urlInput.addEventListener('input', () => {
+            statusMessage.style.display = 'none';
+        });
+        
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleDownload();
+            }
+        });
+</script>
+</body>
+</html>

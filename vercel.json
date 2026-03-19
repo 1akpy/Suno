@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/get_full_url.php", "destination": "/api/get_full_url" }
+  ]
+}
