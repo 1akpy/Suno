@@ -786,6 +786,8 @@
       const link = document.createElement('a');
       link.href = `https://cdn1.suno.ai/${id}.mp3`;
       link.download = `${id}.mp3`;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
