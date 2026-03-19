@@ -537,16 +537,7 @@
   }
 
   @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
-
-  /* ── dynamic theme vars (overridden by JS) ─────────────────────────── */
-  :root {
-    --a1: #fb923c;
-    --a2: #ea580c;
-    --a3: #fed7aa;
-    --a1r: 251; --a1g: 146; --a1b: 60;
-  }
 </style>
-<style id="dynTheme"></style>
 </head>
 <body>
 
@@ -676,11 +667,6 @@ for (let i = 0; i < WV_COUNT; i++) {
   wvBars.push(b);
 }
 
-// ── accent color (updated by theme engine) ───────────────────────────────────
-let accentRgb = [251, 146, 60];
-let accentLightRgb = [255, 200, 100];
-
-// apply default theme on boot (no animation)
 
 const canvas = document.getElementById('stars');
 const ctx    = canvas.getContext('2d');
@@ -696,14 +682,12 @@ const drawStars = () => {
     s.pulse += s.pulseSpeed;
     const opacity = s.op*(0.5+0.5*Math.sin(s.pulse));
     if (s.orange) {
-      const [r,g,b] = accentRgb;
       const grd = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*4);
-      grd.addColorStop(0,`rgba(${r},${g},${b},${opacity*0.5})`);
-      grd.addColorStop(1,`rgba(${r},${g},${b},0)`);
+      grd.addColorStop(0,`rgba(251,146,60,${opacity*0.5})`);
+      grd.addColorStop(1,`rgba(251,146,60,0)`);
       ctx.fillStyle = grd;
       ctx.beginPath(); ctx.arc(s.x,s.y,s.r*4,0,Math.PI*2); ctx.fill();
-      const [lr,lg,lb] = accentLightRgb;
-      ctx.fillStyle = `rgba(${lr},${lg},${lb},${opacity})`;
+      ctx.fillStyle = `rgba(255,200,100,${opacity})`;
     } else { ctx.fillStyle = `rgba(255,255,255,${opacity})`; }
     ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
     s.x += Math.cos(s.dir)*s.speed*0.3; s.y += Math.sin(s.dir)*s.speed*0.3;
@@ -813,117 +797,10 @@ const volumeSlider  = document.getElementById('volumeSlider');
 const dlBtn         = document.getElementById('dlBtn');
 const dlCoverBtn    = document.getElementById('dlCoverBtn');
 const audioEl       = document.getElementById('audioEl');
-const dynTheme      = document.getElementById('dynTheme');
 
 let statusTimer  = null;
 let currentId    = null;
 let currentCoverUrl = null;
-
-// boot — apply default orange theme
-setTimeout(() => applyTheme(0, false), 0);
-
-// ══════════════════════════════════════════════════════════════════════════════
-// 🎨 COLOR EXTRACTION + THEME ENGINE
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ══════════════════════════════════════════════════════════════════════════════
-// 🎨 PRESET THEME ENGINE
-// ══════════════════════════════════════════════════════════════════════════════
-const THEMES = [
-  // 0 — default orange (starting state, returned on reset)
-  { name:'ember',    bg:'#0a0602', main:[251,146,60],  dark:[234,88,12],   light:[254,215,170] },
-  // music themes
-  { name:'violet',   bg:'#080610', main:[167,139,250], dark:[124,58,237],  light:[221,214,254] },
-  { name:'rose',     bg:'#0d0508', main:[251,113,133], dark:[225,29,72],   light:[254,205,211] },
-  { name:'cyan',     bg:'#010e10', main:[34,211,238],  dark:[8,145,178],   light:[165,243,252] },
-  { name:'lime',     bg:'#040a01', main:[163,230,53],  dark:[101,163,13],  light:[217,249,157] },
-  { name:'indigo',   bg:'#03030f', main:[129,140,248], dark:[79,70,229],   light:[199,210,254] },
-  { name:'amber',    bg:'#0a0800', main:[251,191,36],  dark:[217,119,6],   light:[254,243,199] },
-  { name:'pink',     bg:'#0d0209', main:[232,121,249], dark:[192,38,211],  light:[245,208,254] },
-  { name:'teal',     bg:'#011009', main:[45,212,191],  dark:[13,148,136],  light:[153,246,228] },
-  { name:'red',      bg:'#0d0202', main:[248,113,113], dark:[220,38,38],   light:[254,202,202] },
-];
-
-let currentThemeIdx = 0;
-
-const applyTheme = (idx, animate = true) => {
-  const t = THEMES[idx];
-  const [mr,mg,mb] = t.main;
-  const [dr,dg,db] = t.dark;
-  const [lr,lg,lb] = t.light;
-
-  accentRgb      = [mr,mg,mb];
-  accentLightRgb = [lr,lg,lb];
-
-  const hex  = `#${mr.toString(16).padStart(2,'0')}${mg.toString(16).padStart(2,'0')}${mb.toString(16).padStart(2,'0')}`;
-  const dHex = `#${dr.toString(16).padStart(2,'0')}${dg.toString(16).padStart(2,'0')}${db.toString(16).padStart(2,'0')}`;
-  const lHex = `#${lr.toString(16).padStart(2,'0')}${lg.toString(16).padStart(2,'0')}${lb.toString(16).padStart(2,'0')}`;
-
-  const tr = animate ? 'transition: color 0.8s, background 0.8s, border-color 0.8s, box-shadow 0.8s;' : '';
-
-  dynTheme.textContent = `
-    :root {
-      --c1:${hex}; --c2:${hex}; --c3:${dHex};
-      --c-glow:rgba(${mr},${mg},${mb},0.4);
-      --c-glow2:rgba(${dr},${dg},${db},0.12);
-      --c-glow3:rgba(${mr},${mg},${mb},0.06);
-      --c-ring1:rgba(${mr},${mg},${mb},0.15);
-      --c-border:rgba(${mr},${mg},${mb},0.22);
-      --c-border-focus:rgba(${mr},${mg},${mb},0.6);
-      --c-shadow:rgba(${mr},${mg},${mb},0.35);
-      --c-shadow2:rgba(${mr},${mg},${mb},0.6);
-      --c-shadow3:rgba(${mr},${mg},${mb},0.15);
-      --c-wv-played:rgba(${mr},${mg},${mb},0.75);
-      --c-wv-active:${hex};
-      --c-wv-glow:rgba(${mr},${mg},${mb},0.6);
-      --c-btn-bg1:${hex}; --c-btn-bg2:${dHex};
-      --c-progress1:${dHex}; --c-progress2:${hex};
-      --c-play-bg:rgba(${mr},${mg},${mb},0.12);
-      --c-play-border:rgba(${mr},${mg},${mb},0.3);
-      --c-play-glow:rgba(${mr},${mg},${mb},0.4);
-      --c-dl-border:rgba(${mr},${mg},${mb},0.28);
-      --c-dl-text:${hex};
-      --c-dl-bg:rgba(${mr},${mg},${mb},0.08);
-      --c-dl-bg2:rgba(${mr},${mg},${mb},0.18);
-      --c-card-border:rgba(${mr},${mg},${mb},0.2);
-      --c-cover-bg:rgba(${mr},${mg},${mb},0.08);
-      --c-cover-border:rgba(${mr},${mg},${mb},0.15);
-      --c-sub:rgba(${mr},${mg},${mb},0.3);
-      --c-source:rgba(${mr},${mg},${mb},0.5);
-      --c-spin1:rgba(${mr},${mg},${mb},0.7);
-      --c-spin2:rgba(${mr},${mg},${mb},0.3);
-    }
-    body { background: ${t.bg} !important; ${animate ? 'transition: background 0.9s ease;' : ''} }
-    h1 .load {
-      background: linear-gradient(90deg, ${hex}, ${lHex}, ${dHex}) !important;
-      -webkit-background-clip: text !important;
-      background-clip: text !important;
-      -webkit-text-fill-color: transparent !important;
-      background-size: 200% !important;
-    }
-    .glow-bg {
-      background:
-        radial-gradient(ellipse 65% 55% at 15% 20%, rgba(${mr},${mg},${mb},0.15) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 50% at 85% 80%, rgba(${dr},${dg},${db},0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(${mr},${mg},${mb},0.06) 0%, transparent 70%) !important;
-    }
-  `;
-};
-
-const resetTheme = () => {
-  currentThemeIdx = 0;
-  applyTheme(0, true);
-};
-
-// pick a random theme that's different from current
-const pickNextTheme = () => {
-  let next;
-  do { next = 1 + Math.floor(Math.random() * (THEMES.length - 1)); }
-  while (next === currentThemeIdx);
-  currentThemeIdx = next;
-  applyTheme(next, true);
-};
-
 
 
 const showStatus = (type, msg) => {
@@ -1121,7 +998,6 @@ const loadTrack = async () => {
       currentCoverUrl = imgUrl;
       coverBlur.style.backgroundImage = `url(${imgUrl})`;
       coverBlur.classList.add('show');
-      pickNextTheme();
     };
     coverImg.onerror = () => {
       const png = `https://cdn2.suno.ai/image_${id}.png`;
@@ -1130,7 +1006,6 @@ const loadTrack = async () => {
         currentCoverUrl = png;
         coverBlur.style.backgroundImage=`url(${png})`;
         coverBlur.classList.add('show');
-        pickNextTheme();
       };
       coverImg.onerror = () => {}; // keep placeholder
       coverImg.src = png;
@@ -1165,10 +1040,7 @@ urlInput.addEventListener('keypress', e => { if(e.key==='Enter') loadTrack(); })
 
 // ── hide player the moment URL changes ───────────────────────────────────────
 urlInput.addEventListener('input', () => {
-  if (urlInput.value.trim() === '' || !playerWrap.classList.contains('show')) {
-    if (urlInput.value.trim() === '') resetTheme();
-    if (!playerWrap.classList.contains('show')) return;
-  }
+  if (!playerWrap.classList.contains('show')) return;
   playerWrap.classList.remove('show');
   coverBlur.classList.remove('show');
   coverBlur.style.backgroundImage = '';
@@ -1185,7 +1057,6 @@ urlInput.addEventListener('input', () => {
   timeCurEl.textContent = '0:00';
   timeDurEl.textContent = '—:——';
   updateWaveform(0);
-  if (urlInput.value.trim() === '') resetTheme();
 });
 
 document.getElementById("url").value = window.location.href.replace("ssuno","suno");
