@@ -1,14 +1,33 @@
-# SunoLoad 🎵
-
 <div align="center">
 
-![Badge](https://img.shields.io/badge/Suno-MP3%20Downloader-f5a623?style=for-the-badge&logo=music&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-Ready-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+<br/>
+
+```
+ ___  _  _ _  _  __  __    __  __   __
+/ __)( )( ( \( )/  \(  )  /  \(  ) (  )
+\__ \ )()(  )  (( () ))(__( () ))(__/ (_/
+(___/(__\_(_)\__)\__/(____)\__/(____)\___/
+```
+
+# SunoLoad 🎵
+
+**Вставь ссылку на трек с Suno — скачай MP3 в один клик**
+**Paste a Suno link — download MP3 in one click**
+
+<br/>
+
+[![Suno](https://img.shields.io/badge/Suno-MP3%20Downloader-f97316?style=flat-square&logoColor=white)](https://sunoload.vercel.app)
+[![Vercel](https://img.shields.io/badge/Vercel-Ready-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![PHP](https://img.shields.io/badge/PHP-any-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
+
+<br/>
 
 **[ [🇷🇺 Русский](#-русский) · [🇬🇧 English](#-english) ]**
 
 </div>
+
+<br/>
 
 ---
 
@@ -31,17 +50,19 @@ cdn1.suno.ai/453a796e-....mp3  ✅
 | Тип | Пример |
 |-----|--------|
 | Короткая | `suno.com/s/r4t4FIFyoU7GTnX8` |
-| Полная   | `suno.com/song/453a796e-...`   |
+| Полная | `suno.com/song/453a796e-...` |
 
 ### Где хостить
 
 **Vercel** (бесплатно, рекомендуется)
+
 1. Залей репозиторий на GitHub
 2. Зайди на [vercel.com](https://vercel.com) → **Add New Project**
 3. Выбери репо, Framework: **Other**
 4. **Deploy** — готово
 
 **Python хостинг** (Railway, Render, VPS)
+
 ```bash
 python backend.py
 ```
@@ -71,17 +92,19 @@ cdn1.suno.ai/453a796e-....mp3  ✅
 | Type | Example |
 |------|---------|
 | Short | `suno.com/s/r4t4FIFyoU7GTnX8` |
-| Full  | `suno.com/song/453a796e-...`   |
+| Full | `suno.com/song/453a796e-...` |
 
 ### Hosting
 
 **Vercel** (free, recommended)
+
 1. Push this repo to GitHub
 2. Go to [vercel.com](https://vercel.com) → **Add New Project**
 3. Import the repo, Framework: **Other**
 4. Hit **Deploy** — done
 
 **Python hosting** (Railway, Render, VPS)
+
 ```bash
 python backend.py
 ```
@@ -93,6 +116,8 @@ Drop `index.html` + `get_full_url.php` — works out of the box.
 ---
 
 <div align="center">
+
+<br/>
 
 *Not affiliated with Suno Inc. · For personal use only*
 
