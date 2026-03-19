@@ -1,4 +1,4 @@
-# 🎵 SunoLoad
+# SunoLoad 🎵
 
 <div align="center">
 
@@ -6,15 +6,57 @@
 ![Vercel](https://img.shields.io/badge/Vercel-Ready-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
-**Download any Suno track as MP3 in one click.**
-
-[🌐 Live Demo](https://suno-wine-eight.vercel.app) · [⭐ Star this repo](#)
+**[ [🇷🇺 Русский](#-русский) · [🇬🇧 English](#-english) ]**
 
 </div>
 
 ---
 
-## How it works
+## 🇷🇺 Русский
+
+Вставь ссылку на трек с Suno — скачай MP3 в один клик.
+
+### Как это работает
+
+```
+suno.com/s/r4t4FIFyoU7GTnX8
+        ↓  бэкенд следует редиректу
+suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
+        ↓  собирается прямая ссылка
+cdn1.suno.ai/453a796e-....mp3  ✅
+```
+
+### Поддерживаемые ссылки
+
+| Тип | Пример |
+|-----|--------|
+| Короткая | `suno.com/s/r4t4FIFyoU7GTnX8` |
+| Полная   | `suno.com/song/453a796e-...`   |
+
+### Где хостить
+
+**Vercel** (бесплатно, рекомендуется)
+1. Залей репозиторий на GitHub
+2. Зайди на [vercel.com](https://vercel.com) → **Add New Project**
+3. Выбери репо, Framework: **Other**
+4. **Deploy** — готово
+
+**Python хостинг** (Railway, Render, VPS)
+```bash
+python backend.py
+```
+
+**PHP хостинг** (Beget, Timeweb и др.)
+
+Залей `index.html` + `get_full_url.php` — работает сразу.
+
+---
+
+## 🇬🇧 English
+
+Paste a Suno link — download MP3 in one click.
+
+### How it works
 
 ```
 suno.com/s/r4t4FIFyoU7GTnX8
@@ -24,35 +66,29 @@ suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
 cdn1.suno.ai/453a796e-....mp3  ✅
 ```
 
-## Supported links
+### Supported links
 
 | Type | Example |
 |------|---------|
 | Short | `suno.com/s/r4t4FIFyoU7GTnX8` |
 | Full  | `suno.com/song/453a796e-...`   |
 
----
+### Hosting
 
-## Hosting options
-
-### ▶ Vercel (recommended, free)
-
+**Vercel** (free, recommended)
 1. Push this repo to GitHub
 2. Go to [vercel.com](https://vercel.com) → **Add New Project**
 3. Import the repo, Framework: **Other**
 4. Hit **Deploy** — done
 
-### ▶ Any Python hosting (Railway, Render, VPS)
-
+**Python hosting** (Railway, Render, VPS)
 ```bash
 python backend.py
 ```
 
-Open `http://localhost:8080`
+**PHP hosting** (any shared hosting)
 
-### ▶ Any PHP hosting (Beget, Timeweb, etc.)
-
-Drop `index.html` + `get_full_url.php` on your server — works out of the box.
+Drop `index.html` + `get_full_url.php` — works out of the box.
 
 ---
 
