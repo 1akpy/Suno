@@ -825,15 +825,34 @@ progressWrap.addEventListener('click', e => {
 });
 
 // download button inside player
-dlBtn.addEventListener('click', () => {
+dlBtn.addEventListener('click', async () => {
   if (!currentId) return;
   sfxWhoosh();
   burst(dlBtn.getBoundingClientRect().left + dlBtn.offsetWidth/2, dlBtn.getBoundingClientRect().top + dlBtn.offsetHeight/2);
-  const a = document.createElement('a');
-  a.href = `https://cdn1.suno.ai/${currentId}.mp3`;
-  a.download = `${currentId}.mp3`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  showStatus('success','🎵 download started');
+  dlBtn.disabled = true;
+  dlBtn.textContent = '…';
+  try {
+    const resp = await fetch(`https://cdn1.suno.ai/${currentId}.mp3`);
+    if (!resp.ok) throw new Error('fetch failed');
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `${currentId}.mp3`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    showStatus('success','🎵 download started');
+  } catch {
+    // fallback: direct link
+    const a = document.createElement('a');
+    a.href = `https://cdn1.suno.ai/${currentId}.mp3`;
+    a.download = `${currentId}.mp3`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showStatus('success','🎵 download started');
+  } finally {
+    dlBtn.disabled = false;
+    dlBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> MP3`;
+  }
 });
 
 // ── main load btn ────────────────────────────────────────────────────────────
@@ -940,6 +959,26 @@ const loadTrack = async () => {
 
 downloadBtn.addEventListener('click', loadTrack);
 urlInput.addEventListener('keypress', e => { if(e.key==='Enter') loadTrack(); });
+
+// ── hide player the moment URL changes ───────────────────────────────────────
+urlInput.addEventListener('input', () => {
+  if (!playerWrap.classList.contains('show')) return;
+  playerWrap.classList.remove('show');
+  coverBlur.classList.remove('show');
+  coverBlur.style.backgroundImage = '';
+  audioEl.pause();
+  audioEl.src = '';
+  currentId = null;
+  coverImg.classList.remove('loaded');
+  coverImg.src = '';
+  coverWrap.classList.remove('playing');
+  playIcon.style.display = 'block';
+  pauseIcon.style.display = 'none';
+  progressFill.style.width = '0%';
+  timeCurEl.textContent = '0:00';
+  timeDurEl.textContent = '—:——';
+  updateWaveform(0);
+});
 
 document.getElementById("url").value = window.location.href.replace("ssuno","suno");
 </script>
