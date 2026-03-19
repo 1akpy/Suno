@@ -2,17 +2,12 @@
 
 <br/>
 
-# SunoLoad 🎵
+# 🎵 SunoLoad
 
-**Вставь ссылку на трек с Suno — скачай MP3 в один клик**
-**Paste a Suno link — download MP3 in one click**
-
-<br/>
-
-[![Suno](https://img.shields.io/badge/Suno-MP3%20Downloader-f97316?style=flat-square&logoColor=white)](https://sunoload.vercel.app)
+[![Suno](https://img.shields.io/badge/Suno-MP3%20Downloader-f97316?style=flat-square)](.)
 [![Vercel](https://img.shields.io/badge/Vercel-Ready-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![PHP](https://img.shields.io/badge/PHP-any-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](.)
+[![PHP](https://img.shields.io/badge/PHP-any-777BB4?style=flat-square&logo=php&logoColor=white)](.)
 
 <br/>
 
@@ -20,13 +15,13 @@
 
 </div>
 
-<br/>
-
 ---
 
 ## 🇷🇺 Русский
 
-Вставь ссылку на трек с Suno — скачай MP3 в один клик.
+Скопируй ссылку на любой трек с Suno и скачай его как MP3 — без регистрации, без расширений, без лишних шагов.
+
+<br/>
 
 ### Как это работает
 
@@ -38,37 +33,45 @@ suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
 cdn1.suno.ai/453a796e-....mp3  ✅
 ```
 
-### Поддерживаемые ссылки
+<br/>
+
+### Какие ссылки подходят
 
 | Тип | Пример |
 |-----|--------|
 | Короткая | `suno.com/s/r4t4FIFyoU7GTnX8` |
-| Полная | `suno.com/song/453a796e-...` |
+| Полная   | `suno.com/song/453a796e-...`   |
 
-### Где хостить
+<br/>
 
-**Vercel** (бесплатно, рекомендуется)
+### Как задеплоить себе
+
+> Хочешь поднять свою копию? Вот три способа — выбери любой.
+
+**▸ Vercel** (бесплатно, проще всего)
 
 1. Залей репозиторий на GitHub
 2. Зайди на [vercel.com](https://vercel.com) → **Add New Project**
 3. Выбери репо, Framework: **Other**
-4. **Deploy** — готово
+4. Нажми **Deploy** — всё готово
 
-**Python хостинг** (Railway, Render, VPS)
+**▸ Python** (Railway, Render, VPS)
 
 ```bash
-python get_full_url.py
+python backend.py
 ```
 
-**PHP хостинг** (Beget, Timeweb и др.)
+**▸ PHP** (Beget, Timeweb и любой другой шаред-хостинг)
 
-Залей `index.html` + `get_full_url.php` — работает сразу.
+Загрузи `index.html` и `get_full_url.php` — работает сразу из коробки.
 
 ---
 
 ## 🇬🇧 English
 
-Paste a Suno link — download MP3 in one click.
+Copy any Suno track link and download it as MP3 — no account, no extension, no extra steps.
+
+<br/>
 
 ### How it works
 
@@ -80,31 +83,37 @@ suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
 cdn1.suno.ai/453a796e-....mp3  ✅
 ```
 
-### Supported links
+<br/>
+
+### Supported link formats
 
 | Type | Example |
 |------|---------|
 | Short | `suno.com/s/r4t4FIFyoU7GTnX8` |
-| Full | `suno.com/song/453a796e-...` |
+| Full  | `suno.com/song/453a796e-...`   |
 
-### Hosting
+<br/>
 
-**Vercel** (free, recommended)
+### Self-hosting
+
+> Want to run your own copy? Pick any option below.
+
+**▸ Vercel** (free, easiest)
 
 1. Push this repo to GitHub
 2. Go to [vercel.com](https://vercel.com) → **Add New Project**
 3. Import the repo, Framework: **Other**
-4. Hit **Deploy** — done
+4. Hit **Deploy** — you're done
 
-**Python hosting** (Railway, Render, VPS)
+**▸ Python** (Railway, Render, VPS)
 
 ```bash
-python get_full_url.py
+python backend.py
 ```
 
-**PHP hosting** (any shared hosting)
+**▸ PHP** (any shared hosting)
 
-Drop `index.html` + `get_full_url.php` — works out of the box.
+Upload `index.html` + `get_full_url.php` — works out of the box.
 
 ---
 
