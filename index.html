@@ -887,7 +887,10 @@ dlBtn.addEventListener('click', async () => {
   sfxWhoosh();
   burst(dlBtn.getBoundingClientRect().left + dlBtn.offsetWidth/2, dlBtn.getBoundingClientRect().top + dlBtn.offsetHeight/2);
   dlBtn.disabled = true;
-  dlBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> …`;
+  dlBtn.querySelector('svg').style.display = 'none';
+  const loadingText = dlBtn.querySelector('.dl-text') || dlBtn;
+  const origText = dlBtn.textContent.trim();
+  dlBtn.textContent = '…';
   const mp3url = `https://cdn1.suno.ai/${currentId}.mp3`;
   if (!isSafeCdn(mp3url)) return;
   try {
@@ -910,7 +913,15 @@ dlBtn.addEventListener('click', async () => {
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   } finally {
     dlBtn.disabled = false;
-    dlBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> MP3`;
+    dlBtn.textContent = '';
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width','12'); svg.setAttribute('height','12'); svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('fill','none');
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d','M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3');
+    path.setAttribute('stroke','currentColor'); path.setAttribute('stroke-width','2.2');
+    path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-linejoin','round');
+    svg.appendChild(path); dlBtn.appendChild(svg);
+    dlBtn.appendChild(document.createTextNode(' MP3'));
     showStatus('success','🎵 download started');
   }
 });
@@ -961,8 +972,18 @@ urlInput.addEventListener('keydown', e => {
 });
 
 // ── security ──────────────────────────────────────────────────────────────────
-const ALLOWED_CDN = ['https://cdn1.suno.ai/', 'https://cdn2.suno.ai/'];
-const isSafeCdn = url => url && ALLOWED_CDN.some(cdn => url.startsWith(cdn));
+const ALLOWED_CDN  = ['https://cdn1.suno.ai/', 'https://cdn2.suno.ai/'];
+const UUID_STRICT  = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const isSafeCdn = url => typeof url === 'string' && ALLOWED_CDN.some(c => url.startsWith(c));
+
+// strict suno.com hostname check — prevents evil.com?q=suno.com bypass
+const isSunoUrl = url => {
+  try {
+    const h = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
+    return h === 'suno.com' || h.endsWith('.suno.com');
+  } catch { return false; }
+};
 
 // rate limit — max 5 requests per 30 seconds
 const RL = { count: 0, reset: Date.now() + 30000 };
@@ -991,14 +1012,18 @@ const fetchWithTimeout = async (url, ms = 10000) => {
   }
 };
 
-// validate API response shape
+// validate API response — strict UUID, CDN whitelist, safe suno_url
 const validateApiResponse = (data) => {
   if (!data || typeof data !== 'object') throw new Error('invalid API response');
   if (!data.id || typeof data.id !== 'string') throw new Error('missing track id');
-  if (!/^[0-9a-f-]{36}$/i.test(data.id)) throw new Error('invalid track id format');
-  if (!isSafeCdn(data.mp3_url))   throw new Error('unsafe mp3 url in response');
-  if (!isSafeCdn(data.cover_url)) throw new Error('unsafe cover url in response');
-  if (!data.mp3_url.endsWith('.mp3')) throw new Error('unexpected file type');
+  if (!UUID_STRICT.test(data.id)) throw new Error('invalid track id format');
+  if (!isSafeCdn(data.mp3_url))    throw new Error('unsafe mp3 url in response');
+  if (!isSafeCdn(data.cover_url))  throw new Error('unsafe cover url in response');
+  if (!data.mp3_url.endsWith('.mp3')) throw new Error('unexpected mp3 file type');
+  // cover_png is optional but must be CDN if present
+  if (data.cover_png && !isSafeCdn(data.cover_png)) throw new Error('unsafe cover_png url');
+  // suno_url must point to suno.com only
+  if (data.suno_url && !isSunoUrl(data.suno_url)) throw new Error('unsafe suno_url in response');
 };
 
 const OPENSUNO = 'https://opensuno.vercel.app';
@@ -1007,7 +1032,7 @@ const loadTrack = async () => {
   playIntro(); sfxClick();
   const url = urlInput.value.trim();
   if (!url) { showStatus('error','enter a url first'); return; }
-  if (!url.includes('suno.com')) { showStatus('error','need a suno.com link'); return; }
+  if (!isSunoUrl(url)) { showStatus('error','need a suno.com link'); return; }
 
   sfxWhoosh();
   downloadBtn.classList.add('loading');
@@ -1028,25 +1053,24 @@ const loadTrack = async () => {
     audioEl.src = data.mp3_url;
     audioEl.load();
 
-    // set cover
+    // set cover — fallback png also validated by isSafeCdn in validateApiResponse
     const imgUrl = data.cover_url;
-    coverImg.onload = () => {
-      coverImg.classList.add('loaded');
-    };
+    coverImg.onload = () => { coverImg.classList.add('loaded'); };
     coverImg.onerror = () => {
-      const png = data.cover_png;
-      coverImg.onload = () => { coverImg.classList.add('loaded'); currentCoverUrl = png; };
+      if (!data.cover_png || !isSafeCdn(data.cover_png)) return;
+      coverImg.onload = () => { coverImg.classList.add('loaded'); currentCoverUrl = data.cover_png; };
       coverImg.onerror = () => {};
-      coverImg.src = png;
+      coverImg.src = data.cover_png;
     };
     coverImg.src = imgUrl;
 
-    // meta
+    // meta — use textContent only, never innerHTML
     const id = data.id;
     document.getElementById('trackId').textContent     = id.length > 24 ? id.slice(0,11)+'…'+id.slice(-8) : id;
     document.getElementById('trackLabel').textContent  = data.title  || 'Suno Track';
     document.getElementById('trackArtist').textContent = data.artist || '';
     const sunoLink = document.getElementById('sunoLink');
+    // only set href if suno_url passed validation (isSunoUrl checked in validateApiResponse)
     sunoLink.href = data.suno_url || `https://suno.com/song/${id}`;
     sunoLink.style.display = 'inline-flex';
 
