@@ -2,19 +2,19 @@
 
 <br/>
 
-# 🎵 OpenSuno-and-ApiSuno
+# 🎵 SunoLoad
 
-### Unofficial Suno track resolver — free & open source
+### Download Suno tracks — MP3 & cover in one click
 
 <br/>
 
-[![Live](https://img.shields.io/badge/Live-opensuno.vercel.app-fb923c?style=flat-square)](https://opensuno.vercel.app)
-[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Live](https://img.shields.io/badge/Live-sunoload.vercel.app-fb923c?style=flat-square)](https://sunoload.vercel.app)
 [![License](https://img.shields.io/badge/License-MIT-fb923c?style=flat-square)](LICENSE)
+[![API](https://img.shields.io/badge/Powered%20by-OpenSuno%20API-fb923c?style=flat-square)](https://github.com/1akpy/OpenSuno-and-ApiSuno)
 
 <br/>
 
-Pass any Suno link — short or full — and get back direct MP3, cover image and track metadata. No API key, no auth, no registration.
+Paste any Suno link — short or full — and get a built-in player with cover art, waveform visualizer, and one-click download for both MP3 and cover image.
 
 <br/>
 
@@ -24,101 +24,38 @@ Pass any Suno link — short or full — and get back direct MP3, cover image an
 
 ## What it does
 
-You send a Suno track URL. The API resolves it, finds the track ID, and returns direct CDN links to the audio file and cover image — along with any available metadata like title, artist, tags and duration.
-
-Works with both link formats:
-- `suno.com/s/xxx` — short links
-- `suno.com/song/uuid` — full links
-
----
-
-## Endpoints
-
-```
-GET /track?url=suno.com/s/{id}
-GET /track?url=suno.com/song/{uuid}
-GET /track/{uuid}
-```
+- Accepts any Suno link: `suno.com/s/xxx` or `suno.com/song/uuid`
+- Shows track cover, title and artist
+- Built-in audio player with waveform, progress bar and volume control
+- Download MP3 and cover image directly from the page
+- No backend needed — powered by [OpenSuno API](https://github.com/1akpy/OpenSuno-and-ApiSuno)
 
 ---
 
-## Response
+## How it works
 
-```json
-{
-  "status": "ok",
-  "data": {
-    "id":        "453a796e-a8e2-4d28-b24f-40f956cb5321",
-    "suno_url":  "https://suno.com/song/453a796e-...",
-    "mp3_url":   "https://cdn1.suno.ai/453a796e-....mp3",
-    "cover_url": "https://cdn2.suno.ai/image_453a796e-....jpeg",
-    "cover_png": "https://cdn2.suno.ai/image_453a796e-....png",
-    "download": {
-      "mp3":       "https://cdn1.suno.ai/453a796e-....mp3",
-      "cover_jpg": "https://cdn2.suno.ai/image_453a796e-....jpeg",
-      "cover_png": "https://cdn2.suno.ai/image_453a796e-....png"
-    },
-    "title":    "Track title",
-    "artist":   "Artist name",
-    "tags":     "pop electronic",
-    "duration": 180
-  }
-}
 ```
-
-Null fields are omitted — only available data is returned.
+suno.com/s/FqENDOXo6l4yKQT0
+        ↓  opensuno.vercel.app resolves the link
+suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
+        ↓  returns direct CDN links
+cdn1.suno.ai/453a796e-....mp3          ✅
+cdn2.suno.ai/image_453a796e-....jpeg   ✅
+```
 
 ---
 
 ## Usage
 
-**JavaScript**
-```js
-const { data } = await fetch(
-  'https://opensuno.vercel.app/track?url=suno.com/s/FqENDOXo6l4yKQT0'
-).then(r => r.json());
+Just open `index.html` — no server, no build step, no dependencies.
 
-new Audio(data.mp3_url).play();
-document.getElementById('cover').src = data.cover_url;
-```
-
-**Python**
-```python
-import requests
-
-data = requests.get(
-    'https://opensuno.vercel.app/track',
-    params={'url': 'suno.com/s/FqENDOXo6l4yKQT0'}
-).json()['data']
-
-print(data['mp3_url'])
-print(data['cover_url'])
-```
-
-**curl**
-```bash
-curl "https://opensuno.vercel.app/track?url=suno.com/s/FqENDOXo6l4yKQT0"
-```
-
-**HTML**
-```html
-<img id="cover">
-<audio id="player" controls></audio>
-
-<script>
-fetch('https://opensuno.vercel.app/track?url=suno.com/s/xxx')
-  .then(r => r.json())
-  .then(({ data }) => {
-    document.getElementById('cover').src  = data.cover_url;
-    document.getElementById('player').src = data.mp3_url;
-  });
-</script>
-```
+Or deploy to any static host (Vercel, Netlify, GitHub Pages).
 
 ---
 
 <div align="center">
 
-*Not affiliated with Suno Inc. · Unofficial · Personal use only*
+*Not affiliated with Suno Inc. · Unofficial · Personal use only*<br/>
+Powered by [OpenSuno API](https://github.com/1akpy/OpenSuno-and-ApiSuno)
 
 </div>
