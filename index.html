@@ -887,42 +887,38 @@ dlBtn.addEventListener('click', async () => {
   sfxWhoosh();
   burst(dlBtn.getBoundingClientRect().left + dlBtn.offsetWidth/2, dlBtn.getBoundingClientRect().top + dlBtn.offsetHeight/2);
   dlBtn.disabled = true;
-  dlBtn.querySelector('svg').style.display = 'none';
-  const loadingText = dlBtn.querySelector('.dl-text') || dlBtn;
-  const origText = dlBtn.textContent.trim();
   dlBtn.textContent = '…';
-  const mp3url = `https://cdn1.suno.ai/${currentId}.mp3`;
-  if (!isSafeCdn(mp3url)) return;
+
+  const proxyUrl = `${OPENSUNO}/download/${currentId}`;
+
   try {
-    const resp = await fetchWithTimeout(mp3url, 30000);
-    if (!resp.ok) throw new Error();
-    const ct = resp.headers.get('content-type') || '';
-    if (!ct.includes('audio') && !ct.includes('octet-stream') && !ct.includes('mpeg')) throw new Error('unexpected content type');
+    const resp = await fetchWithTimeout(proxyUrl, 60000);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const blob = await resp.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = blobUrl; a.download = `${currentId}.mp3`;
+    a.href = blobUrl;
+    a.download = `${currentId}.mp3`;
     a.style.display = 'none';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    showStatus('success','🎵 download started');
   } catch {
-    const a = document.createElement('a');
-    a.href = mp3url; a.download = `${currentId}.mp3`;
-    a.target = '_blank'; a.rel = 'noopener noreferrer';
-    a.style.display = 'none';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    // final fallback — open directly
+    window.open(`https://cdn1.suno.ai/${currentId}.mp3`, '_blank');
+    showStatus('success','🎵 opening track…');
   } finally {
     dlBtn.disabled = false;
     dlBtn.textContent = '';
     const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-    svg.setAttribute('width','12'); svg.setAttribute('height','12'); svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('fill','none');
+    svg.setAttribute('width','12'); svg.setAttribute('height','12');
+    svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('fill','none');
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d','M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3');
     path.setAttribute('stroke','currentColor'); path.setAttribute('stroke-width','2.2');
     path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-linejoin','round');
     svg.appendChild(path); dlBtn.appendChild(svg);
     dlBtn.appendChild(document.createTextNode(' MP3'));
-    showStatus('success','🎵 download started');
   }
 });
 
