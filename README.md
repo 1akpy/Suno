@@ -2,68 +2,123 @@
 
 <br/>
 
-# 🎵 SunoLoad
+# 🎵 OpenSuno-and-ApiSuno
 
-[![Suno](https://img.shields.io/badge/Suno-MP3%20Downloader-f97316?style=flat-square)](.)
-[![Vercel](https://img.shields.io/badge/Vercel-Ready-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](.)
-[![PHP](https://img.shields.io/badge/PHP-any-777BB4?style=flat-square&logo=php&logoColor=white)](.)
+### Unofficial Suno track resolver — free & open source
 
 <br/>
 
+[![Live](https://img.shields.io/badge/Live-opensuno.vercel.app-fb923c?style=flat-square)](https://opensuno.vercel.app)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-fb923c?style=flat-square)](LICENSE)
 
-**Download any Suno track as MP3 in one click.**
+<br/>
 
-[⭐ Star this repo](#)
+Pass any Suno link — short or full — and get back direct MP3, cover image and track metadata. No API key, no auth, no registration.
+
+<br/>
 
 </div>
 
 ---
 
-## How it works
+## What it does
 
-```
-suno.com/s/r4t4FIFyoU7GTnX8
-        ↓  backend follows the redirect
-suno.com/song/453a796e-a8e2-4d28-b24f-40f956cb5321
-        ↓  builds a direct link
-cdn1.suno.ai/453a796e-....mp3  ✅
-```
+You send a Suno track URL. The API resolves it, finds the track ID, and returns direct CDN links to the audio file and cover image — along with any available metadata like title, artist, tags and duration.
 
-## Supported links
-
-| Type | Example |
-|------|---------|
-| Short | `suno.com/s/r4t4FIFyoU7GTnX8` |
-| Full  | `suno.com/song/453a796e-...`   |
+Works with both link formats:
+- `suno.com/s/xxx` — short links
+- `suno.com/song/uuid` — full links
 
 ---
 
-## Hosting options
+## Endpoints
 
-### ▶ Vercel (recommended, free)
-
-1. Push this repo to GitHub
-2. Go to [vercel.com](https://vercel.com) → **Add New Project**
-3. Import the repo, Framework: **Other**
-4. Hit **Deploy** — done
-
-### ▶ Any Python hosting (Railway, Render, VPS)
-
-```bash
-python backend.py
+```
+GET /track?url=suno.com/s/{id}
+GET /track?url=suno.com/song/{uuid}
+GET /track/{uuid}
 ```
 
-Open `http://localhost:8080`
+---
 
-### ▶ Any PHP hosting (Beget, Timeweb, etc.)
+## Response
 
-Drop `index.html` + `get_full_url.php` on your server — works out of the box.
+```json
+{
+  "status": "ok",
+  "data": {
+    "id":        "453a796e-a8e2-4d28-b24f-40f956cb5321",
+    "suno_url":  "https://suno.com/song/453a796e-...",
+    "mp3_url":   "https://cdn1.suno.ai/453a796e-....mp3",
+    "cover_url": "https://cdn2.suno.ai/image_453a796e-....jpeg",
+    "cover_png": "https://cdn2.suno.ai/image_453a796e-....png",
+    "download": {
+      "mp3":       "https://cdn1.suno.ai/453a796e-....mp3",
+      "cover_jpg": "https://cdn2.suno.ai/image_453a796e-....jpeg",
+      "cover_png": "https://cdn2.suno.ai/image_453a796e-....png"
+    },
+    "title":    "Track title",
+    "artist":   "Artist name",
+    "tags":     "pop electronic",
+    "duration": 180
+  }
+}
+```
+
+Null fields are omitted — only available data is returned.
+
+---
+
+## Usage
+
+**JavaScript**
+```js
+const { data } = await fetch(
+  'https://opensuno.vercel.app/track?url=suno.com/s/FqENDOXo6l4yKQT0'
+).then(r => r.json());
+
+new Audio(data.mp3_url).play();
+document.getElementById('cover').src = data.cover_url;
+```
+
+**Python**
+```python
+import requests
+
+data = requests.get(
+    'https://opensuno.vercel.app/track',
+    params={'url': 'suno.com/s/FqENDOXo6l4yKQT0'}
+).json()['data']
+
+print(data['mp3_url'])
+print(data['cover_url'])
+```
+
+**curl**
+```bash
+curl "https://opensuno.vercel.app/track?url=suno.com/s/FqENDOXo6l4yKQT0"
+```
+
+**HTML**
+```html
+<img id="cover">
+<audio id="player" controls></audio>
+
+<script>
+fetch('https://opensuno.vercel.app/track?url=suno.com/s/xxx')
+  .then(r => r.json())
+  .then(({ data }) => {
+    document.getElementById('cover').src  = data.cover_url;
+    document.getElementById('player').src = data.mp3_url;
+  });
+</script>
+```
 
 ---
 
 <div align="center">
 
-*Not affiliated with Suno Inc. · For personal use only*
+*Not affiliated with Suno Inc. · Unofficial · Personal use only*
 
 </div>
