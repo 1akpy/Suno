@@ -581,8 +581,8 @@
         </div>
         <div class="track-info">
           <div class="track-id" id="trackId">—</div>
-          <div class="track-label">Suno Track</div>
-          <div class="track-source">cdn1.suno.ai</div>
+          <div class="track-label" id="trackLabel">Suno Track</div>
+          <div class="track-source" id="trackArtist">cdn1.suno.ai</div>
         </div>
       </div>
 
@@ -945,75 +945,58 @@ urlInput.addEventListener('keydown', e => {
   osc(f,'sine',now,0.05,0.018); noise(0.025,0.018,now,2800,4);
 });
 
-// ── validation ───────────────────────────────────────────────────────────────
-const validateUrl = url => {
-  try {
-    const p=new URL(url);
-    if (!p.hostname.endsWith('suno.com')) return false;
-    const parts=p.pathname.split('/').filter(Boolean);
-    if (parts[0]==='s') return parts.length===2;
-    if (parts[0]==='song') { if(parts.length!==2) return false; if(!/^[a-z0-9\-]+$/i.test(parts[1])) return false; if(!p.searchParams.has('sh')) return false; return true; }
-    return false;
-  } catch(e){ return false; }
-};
-const sendShortLinkToServer = async url => {
-  const r=await fetch('/api/get_full_url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
-  if(!r.ok) throw new Error('Network error while resolving link');
-  const data=await r.json();
-  if(data.error) throw new Error(data.error);
-  return data.full_url;
-};
-const extractIdFromUrl = async url => {
-  const p=new URL(url), parts=p.pathname.split('/').filter(Boolean);
-  if(parts[0]==='s'&&parts.length===2) return extractIdFromUrl(await sendShortLinkToServer(url));
-  if(parts[0]==='song') return parts[1];
-  return null;
-};
+// ── load track via opensuno API ──────────────────────────────────────────────
+const OPENSUNO = 'https://opensuno.vercel.app';
 
-// ── load track ───────────────────────────────────────────────────────────────
 const loadTrack = async () => {
   playIntro(); sfxClick();
   const url = urlInput.value.trim();
   if (!url) { showStatus('error','enter a url first'); return; }
-  if (!validateUrl(url)) { showStatus('error','need suno.com/song/... or suno.com/s/...'); return; }
+  if (!url.includes('suno.com')) { showStatus('error','need a suno.com link'); return; }
 
   sfxWhoosh();
   downloadBtn.classList.add('loading');
   downloadBtn.disabled = true;
 
   try {
-    const id = await extractIdFromUrl(url);
-    if (!id) throw new Error('could not extract track id');
-    currentId = id;
+    const res  = await fetch(`${OPENSUNO}/track?url=${encodeURIComponent(url)}`);
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message || 'API error');
+
+    const data = json.data;
+    currentId       = data.id;
+    currentCoverUrl = data.cover_url;
 
     // set audio
-    audioEl.src = `https://cdn1.suno.ai/${id}.mp3`;
+    audioEl.src = data.mp3_url;
     audioEl.load();
 
-    // set cover — try jpeg then png
-    const imgUrl = `https://cdn2.suno.ai/image_${id}.jpeg`;
+    // set cover
+    const imgUrl = data.cover_url;
     coverImg.crossOrigin = 'anonymous';
     coverImg.onload = () => {
       coverImg.classList.add('loaded');
-      currentCoverUrl = imgUrl;
       coverBlur.style.backgroundImage = `url(${imgUrl})`;
       coverBlur.classList.add('show');
     };
     coverImg.onerror = () => {
-      const png = `https://cdn2.suno.ai/image_${id}.png`;
+      const png = data.cover_png;
       coverImg.onload = () => {
         coverImg.classList.add('loaded');
         currentCoverUrl = png;
-        coverBlur.style.backgroundImage=`url(${png})`;
+        coverBlur.style.backgroundImage = `url(${png})`;
         coverBlur.classList.add('show');
       };
-      coverImg.onerror = () => {}; // keep placeholder
+      coverImg.onerror = () => {};
       coverImg.src = png;
     };
     coverImg.src = imgUrl;
 
-    // track id label
-    trackIdEl.textContent = id.length > 24 ? id.slice(0,11)+'…'+id.slice(-8) : id;
+    // meta
+    const id = data.id;
+    document.getElementById('trackId').textContent     = id.length > 24 ? id.slice(0,11)+'…'+id.slice(-8) : id;
+    document.getElementById('trackLabel').textContent  = data.title  || 'Suno Track';
+    document.getElementById('trackArtist').textContent = data.artist || 'cdn1.suno.ai';
 
     // reset player state
     progressFill.style.width='0%';
@@ -1023,7 +1006,6 @@ const loadTrack = async () => {
     coverWrap.classList.remove('playing');
     updateWaveform(0);
 
-    // show player
     playerWrap.classList.add('show');
     showStatus('success','🎵 track loaded');
 
@@ -1037,8 +1019,6 @@ const loadTrack = async () => {
 
 downloadBtn.addEventListener('click', loadTrack);
 urlInput.addEventListener('keypress', e => { if(e.key==='Enter') loadTrack(); });
-
-// ── hide player the moment URL changes ───────────────────────────────────────
 urlInput.addEventListener('input', () => {
   if (!playerWrap.classList.contains('show')) return;
   playerWrap.classList.remove('show');
@@ -1059,7 +1039,6 @@ urlInput.addEventListener('input', () => {
   updateWaveform(0);
 });
 
-document.getElementById("url").value = window.location.href.replace("ssuno","suno");
 </script>
 </body>
 </html>
