@@ -580,7 +580,12 @@
           <div class="cover-spin"></div>
         </div>
         <div class="track-info">
-          <div class="track-id" id="trackId">—</div>
+          <div class="track-id-row" style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem;">
+            <div class="track-id" id="trackId" style="margin-bottom:0">—</div>
+            <a id="sunoLink" href="#" target="_blank" rel="noopener" title="Open on Suno" style="display:none;color:rgba(255,255,255,0.2);transition:color .2s;flex-shrink:0;" onmouseover="this.style.color='rgba(255,255,255,0.6)'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </div>
           <div class="track-label" id="trackLabel">Suno Track</div>
           <div class="track-source" id="trackArtist"></div>
         </div>
@@ -638,7 +643,7 @@
   </div>
 </div>
 
-<p class="footer">not affiliated with suno inc. &nbsp;·&nbsp; powered by <a href="https://github.com/1akpy/sunoapi" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.25);text-decoration:none">opensuno api</a></p>
+<p class="footer">not affiliated with suno inc. &nbsp;·&nbsp; powered by <a href="https://github.com/1akpy/OpenSuno-and-ApiSuno" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.25);text-decoration:none">opensuno api</a></p>
 
 <!-- hidden audio -->
 <audio id="audioEl" preload="none" crossorigin="anonymous"></audio>
@@ -992,6 +997,9 @@ const loadTrack = async () => {
     document.getElementById('trackId').textContent     = id.length > 24 ? id.slice(0,11)+'…'+id.slice(-8) : id;
     document.getElementById('trackLabel').textContent  = data.title  || 'Suno Track';
     document.getElementById('trackArtist').textContent = data.artist || '';
+    const sunoLink = document.getElementById('sunoLink');
+    sunoLink.href = data.suno_url || `https://suno.com/song/${id}`;
+    sunoLink.style.display = 'inline-flex';
 
     // reset player state
     progressFill.style.width='0%';
@@ -1023,6 +1031,7 @@ urlInput.addEventListener('input', () => {
   audioEl.src = '';
   currentId = null;
   currentCoverUrl = null;
+  document.getElementById('sunoLink').style.display = 'none';
   coverImg.classList.remove('loaded');
   coverImg.src = '';
   coverWrap.classList.remove('playing');
