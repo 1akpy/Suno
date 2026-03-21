@@ -889,9 +889,12 @@ dlBtn.addEventListener('click', async () => {
   dlBtn.disabled = true;
   dlBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> …`;
   const mp3url = `https://cdn1.suno.ai/${currentId}.mp3`;
+  if (!isSafeCdn(mp3url)) return;
   try {
-    const resp = await fetch(mp3url);
+    const resp = await fetchWithTimeout(mp3url, 30000);
     if (!resp.ok) throw new Error();
+    const ct = resp.headers.get('content-type') || '';
+    if (!ct.includes('audio') && !ct.includes('octet-stream') && !ct.includes('mpeg')) throw new Error('unexpected content type');
     const blob = await resp.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -915,11 +918,15 @@ dlBtn.addEventListener('click', async () => {
 // ── cover download ────────────────────────────────────────────────────────────
 dlCoverBtn.addEventListener('click', async () => {
   if (!currentId || !currentCoverUrl) return;
+  if (!isSafeCdn(currentCoverUrl)) return;
   sfxWhoosh();
   const r = dlCoverBtn.getBoundingClientRect();
   burst(r.left + r.width/2, r.top + r.height/2);
   try {
-    const res = await fetch(currentCoverUrl);
+    const res = await fetchWithTimeout(currentCoverUrl, 15000);
+    if (!res.ok) throw new Error();
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('image')) throw new Error('unexpected content type');
     const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -953,7 +960,47 @@ urlInput.addEventListener('keydown', e => {
   osc(f,'sine',now,0.05,0.018); noise(0.025,0.018,now,2800,4);
 });
 
-// ── load track via opensuno API ──────────────────────────────────────────────
+// ── security ──────────────────────────────────────────────────────────────────
+const ALLOWED_CDN = ['https://cdn1.suno.ai/', 'https://cdn2.suno.ai/'];
+const isSafeCdn = url => url && ALLOWED_CDN.some(cdn => url.startsWith(cdn));
+
+// rate limit — max 5 requests per 30 seconds
+const RL = { count: 0, reset: Date.now() + 30000 };
+const checkRateLimit = () => {
+  const now = Date.now();
+  if (now > RL.reset) { RL.count = 0; RL.reset = now + 30000; }
+  if (RL.count >= 5) {
+    const secs = Math.ceil((RL.reset - now) / 1000);
+    throw new Error(`too many requests — wait ${secs}s`);
+  }
+  RL.count++;
+};
+
+// fetch with timeout
+const fetchWithTimeout = async (url, ms = 10000) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: controller.signal });
+    return r;
+  } catch(e) {
+    if (e.name === 'AbortError') throw new Error('request timed out');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+// validate API response shape
+const validateApiResponse = (data) => {
+  if (!data || typeof data !== 'object') throw new Error('invalid API response');
+  if (!data.id || typeof data.id !== 'string') throw new Error('missing track id');
+  if (!/^[0-9a-f-]{36}$/i.test(data.id)) throw new Error('invalid track id format');
+  if (!isSafeCdn(data.mp3_url))   throw new Error('unsafe mp3 url in response');
+  if (!isSafeCdn(data.cover_url)) throw new Error('unsafe cover url in response');
+  if (!data.mp3_url.endsWith('.mp3')) throw new Error('unexpected file type');
+};
+
 const OPENSUNO = 'https://opensuno.vercel.app';
 
 const loadTrack = async () => {
@@ -967,11 +1014,13 @@ const loadTrack = async () => {
   downloadBtn.disabled = true;
 
   try {
-    const res  = await fetch(`${OPENSUNO}/track?url=${encodeURIComponent(url)}`);
+    checkRateLimit();
+    const res  = await fetchWithTimeout(`${OPENSUNO}/track?url=${encodeURIComponent(url)}`);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
     const json = await res.json();
     if (json.status !== 'ok') throw new Error(json.message || 'API error');
-
     const data = json.data;
+    validateApiResponse(data);
     currentId       = data.id;
     currentCoverUrl = data.cover_url;
 
