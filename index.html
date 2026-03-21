@@ -293,30 +293,29 @@
   }
 
   .player-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(251,146,60,0.18);
+    background: rgba(15,15,15,0.9);
+    border: 1px solid rgba(255,255,255,0.07);
     border-radius: 20px;
     backdrop-filter: blur(24px);
     overflow: hidden;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(251,146,60,0.06);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
   }
 
   /* top row: cover + info */
   .player-top {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.1rem 1.2rem;
+    gap: 1.1rem;
+    padding: 1.2rem 1.3rem 1rem;
   }
 
   .cover-wrap {
     position: relative;
     flex-shrink: 0;
-    width: 68px; height: 68px;
-    border-radius: 12px;
+    width: 80px; height: 80px;
+    border-radius: 10px;
     overflow: hidden;
-    background: rgba(251,146,60,0.08);
-    border: 1px solid rgba(251,146,60,0.15);
+    background: #1a1a1a;
   }
   .cover-img {
     width: 100%; height: 100%;
@@ -329,16 +328,15 @@
   .cover-placeholder {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    color: rgba(251,146,60,0.3);
-    font-size: 1.6rem;
+    color: rgba(255,255,255,0.15);
+    font-size: 1.8rem;
   }
-  /* spinning vinyl ring when playing */
   .cover-spin {
     position: absolute; inset: -3px;
-    border-radius: 14px;
+    border-radius: 13px;
     border: 2px solid transparent;
     border-top-color: rgba(251,146,60,0.7);
-    border-right-color: rgba(251,146,60,0.3);
+    border-right-color: rgba(251,146,60,0.2);
     opacity: 0;
     transition: opacity 0.3s;
     animation: spinRing 1.5s linear infinite;
@@ -353,65 +351,68 @@
   }
   .track-id {
     font-family: 'Syne Mono', monospace;
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.3);
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.2);
     letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.3rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .track-label {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.9);
+    color: #fff;
     letter-spacing: -0.02em;
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .track-source {
     font-family: 'Syne Mono', monospace;
     font-size: 0.6rem;
-    color: rgba(251,146,60,0.5);
+    color: rgba(255,255,255,0.3);
     letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* ── WAVEFORM BAR VISUALIZER ─────────────────────────────────────────── */
   .waveform {
-    padding: 0 1.2rem;
-    margin-bottom: 0.5rem;
+    padding: 0 1.3rem;
+    margin-bottom: 0.3rem;
     display: flex;
     align-items: center;
     gap: 2px;
-    height: 36px;
+    height: 32px;
     cursor: pointer;
-    position: relative;
   }
   .wv-bar {
     flex: 1;
     border-radius: 2px;
-    background: rgba(251,146,60,0.18);
-    transition: background 0.15s;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.12s;
     min-width: 2px;
   }
-  .wv-bar.played { background: rgba(251,146,60,0.75); }
-  .wv-bar.active { background: #fb923c; box-shadow: 0 0 6px rgba(251,146,60,0.6); }
+  .wv-bar.played { background: rgba(251,146,60,0.6); }
+  .wv-bar.active { background: #fb923c; box-shadow: 0 0 5px rgba(251,146,60,0.5); }
 
   /* ── PROGRESS ROW ─────────────────────────────────────────────────────── */
   .progress-row {
-    padding: 0 1.2rem;
-    margin-bottom: 0.8rem;
+    padding: 0 1.3rem;
+    margin-bottom: 0.7rem;
     display: flex;
     align-items: center;
-    gap: 0.7rem;
+    gap: 0.6rem;
   }
 
   .time-label {
     font-family: 'Syne Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(255,255,255,0.3);
-    letter-spacing: 0.04em;
-    min-width: 34px;
+    font-size: 0.58rem;
+    color: rgba(255,255,255,0.25);
+    min-width: 30px;
   }
   .time-label.right { text-align: right; }
 
@@ -422,7 +423,6 @@
     border-radius: 2px;
     cursor: pointer;
     position: relative;
-    overflow: hidden;
   }
   .progress-fill {
     height: 100%;
@@ -435,14 +435,14 @@
   .progress-fill::after {
     content: '';
     position: absolute;
-    right: -4px; top: 50%;
+    right: -5px; top: 50%;
     transform: translateY(-50%);
-    width: 8px; height: 8px;
-    background: #fb923c;
+    width: 10px; height: 10px;
+    background: #fff;
     border-radius: 50%;
-    box-shadow: 0 0 8px rgba(251,146,60,0.8);
     opacity: 0;
     transition: opacity 0.2s;
+    box-shadow: 0 0 6px rgba(251,146,60,0.6);
   }
   .progress-bar-wrap:hover .progress-fill::after { opacity: 1; }
 
@@ -451,68 +451,69 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.8rem 1.2rem 1.1rem;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 0.65rem 1.3rem 1rem;
   }
 
   .ctrl-btn {
     background: none;
     border: none;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.35);
     cursor: pointer;
-    padding: 0.4rem;
+    padding: 0.35rem;
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    transition: color 0.2s, background 0.2s, transform 0.15s;
+    transition: color 0.2s, transform 0.15s;
   }
-  .ctrl-btn:hover { color: #fff; background: rgba(255,255,255,0.06); transform: scale(1.1); }
+  .ctrl-btn:hover { color: rgba(255,255,255,0.7); transform: scale(1.1); }
   .ctrl-btn:active { transform: scale(0.93); }
 
+  /* ── SUNO-STYLE PLAY BUTTON ── */
   .play-btn {
-    width: 44px; height: 44px;
+    width: 52px; height: 52px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #fb923c, #ea580c);
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(251,146,60,0.4);
+    background: #fff;
+    color: #000;
     border: none;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative; overflow: hidden;
+    transition: transform 0.2s, background 0.2s;
+    flex-shrink: 0;
   }
-  .play-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(251,146,60,0.6); }
+  .play-btn:hover { transform: scale(1.06); background: #f0f0f0; }
   .play-btn:active { transform: scale(0.95); }
+  .play-btn svg { fill: #000; margin-left: 2px; }
+  .play-btn svg[id="pauseIcon"] { margin-left: 0; }
 
   .dl-btn {
-    background: rgba(251,146,60,0.1);
-    border: 1px solid rgba(251,146,60,0.25);
-    color: #fb923c;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.6);
     font-family: 'Syne', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    padding: 0.5rem 1rem;
-    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    padding: 0.45rem 0.85rem;
+    border-radius: 500px;
     cursor: pointer;
-    display: flex; align-items: center; gap: 0.35rem;
-    transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex; align-items: center; gap: 0.3rem;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
   }
   .dl-btn:hover {
-    background: rgba(251,146,60,0.18);
-    border-color: rgba(251,146,60,0.5);
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.22);
+    color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(251,146,60,0.2);
   }
-  .dl-btn:active { transform: scale(0.95) translateY(0); }
+  .dl-btn:active { transform: scale(0.95); }
 
   .volume-wrap {
-    display: flex; align-items: center; gap: 0.4rem;
+    display: flex; align-items: center; gap: 0.35rem;
   }
   .volume-slider {
     -webkit-appearance: none;
     appearance: none;
-    width: 56px; height: 3px;
-    background: rgba(255,255,255,0.12);
+    width: 52px; height: 3px;
+    background: rgba(255,255,255,0.1);
     border-radius: 2px;
     outline: none;
     cursor: pointer;
@@ -521,9 +522,8 @@
     -webkit-appearance: none;
     width: 10px; height: 10px;
     border-radius: 50%;
-    background: #fb923c;
+    background: #fff;
     cursor: pointer;
-    box-shadow: 0 0 6px rgba(251,146,60,0.5);
   }
 
   /* footer */
@@ -582,7 +582,7 @@
         <div class="track-info">
           <div class="track-id" id="trackId">—</div>
           <div class="track-label" id="trackLabel">Suno Track</div>
-          <div class="track-source" id="trackArtist">cdn1.suno.ai</div>
+          <div class="track-source" id="trackArtist"></div>
         </div>
       </div>
 
@@ -612,8 +612,8 @@
 
         <!-- play/pause -->
         <button class="play-btn" id="playBtn">
-          <svg id="playIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
-          <svg id="pauseIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+          <svg id="pauseIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
         </button>
 
         <!-- download -->
@@ -638,7 +638,7 @@
   </div>
 </div>
 
-<p class="footer">not affiliated with suno inc.</p>
+<p class="footer">not affiliated with suno inc. &nbsp;·&nbsp; powered by <a href="https://github.com/1akpy/sunoapi" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.25);text-decoration:none">opensuno api</a></p>
 
 <!-- hidden audio -->
 <audio id="audioEl" preload="none" crossorigin="anonymous"></audio>
@@ -882,28 +882,28 @@ dlBtn.addEventListener('click', async () => {
   sfxWhoosh();
   burst(dlBtn.getBoundingClientRect().left + dlBtn.offsetWidth/2, dlBtn.getBoundingClientRect().top + dlBtn.offsetHeight/2);
   dlBtn.disabled = true;
-  dlBtn.textContent = '…';
+  dlBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> …`;
+  const mp3url = `https://cdn1.suno.ai/${currentId}.mp3`;
   try {
-    const resp = await fetch(`https://cdn1.suno.ai/${currentId}.mp3`);
-    if (!resp.ok) throw new Error('fetch failed');
+    const resp = await fetch(mp3url);
+    if (!resp.ok) throw new Error();
     const blob = await resp.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = `${currentId}.mp3`;
+    a.href = blobUrl; a.download = `${currentId}.mp3`;
+    a.style.display = 'none';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-    showStatus('success','🎵 download started');
   } catch {
-    // fallback: direct link
     const a = document.createElement('a');
-    a.href = `https://cdn1.suno.ai/${currentId}.mp3`;
-    a.download = `${currentId}.mp3`;
+    a.href = mp3url; a.download = `${currentId}.mp3`;
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.style.display = 'none';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    showStatus('success','🎵 download started');
   } finally {
     dlBtn.disabled = false;
     dlBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> MP3`;
+    showStatus('success','🎵 download started');
   }
 });
 
@@ -918,15 +918,18 @@ dlCoverBtn.addEventListener('click', async () => {
     const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = `${currentId}_cover.jpg`;
+    a.href = blobUrl; a.download = `${currentId}_cover.jpg`;
+    a.style.display = 'none';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(blobUrl), 5000);
-    showStatus('success','🖼️ cover downloaded');
   } catch {
-    window.open(currentCoverUrl, '_blank');
-    showStatus('success','🖼️ cover opened');
+    const a = document.createElement('a');
+    a.href = currentCoverUrl; a.download = `${currentId}_cover.jpg`;
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.style.display = 'none';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
+  showStatus('success','🖼️ cover downloaded');
 });
 let hoverCooldown = false;
 downloadBtn.addEventListener('mouseenter', () => {
@@ -973,20 +976,12 @@ const loadTrack = async () => {
 
     // set cover
     const imgUrl = data.cover_url;
-    coverImg.crossOrigin = 'anonymous';
     coverImg.onload = () => {
       coverImg.classList.add('loaded');
-      coverBlur.style.backgroundImage = `url(${imgUrl})`;
-      coverBlur.classList.add('show');
     };
     coverImg.onerror = () => {
       const png = data.cover_png;
-      coverImg.onload = () => {
-        coverImg.classList.add('loaded');
-        currentCoverUrl = png;
-        coverBlur.style.backgroundImage = `url(${png})`;
-        coverBlur.classList.add('show');
-      };
+      coverImg.onload = () => { coverImg.classList.add('loaded'); currentCoverUrl = png; };
       coverImg.onerror = () => {};
       coverImg.src = png;
     };
@@ -996,7 +991,7 @@ const loadTrack = async () => {
     const id = data.id;
     document.getElementById('trackId').textContent     = id.length > 24 ? id.slice(0,11)+'…'+id.slice(-8) : id;
     document.getElementById('trackLabel').textContent  = data.title  || 'Suno Track';
-    document.getElementById('trackArtist').textContent = data.artist || 'cdn1.suno.ai';
+    document.getElementById('trackArtist').textContent = data.artist || '';
 
     // reset player state
     progressFill.style.width='0%';
